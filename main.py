@@ -470,20 +470,32 @@ class FoodBot:
         application.add_handler(CallbackQueryHandler(self.handle_contacts, pattern="^contacts$"))
         application.add_handler(CallbackQueryHandler(self.handle_back, pattern="^back$"))
 
-async def main():
+def main():
     """Основная функция"""
     token = os.getenv('BOT_TOKEN')
     if not token:
         logging.error("❌ BOT_TOKEN не найден в переменных окружения")
         return
     
-    application = Application.builder().token(token).build()
-    
-    bot = FoodBot()
-    bot.setup_handlers(application)
-    
-    logging.info("🚀 Бот запущен с поддержкой корейского языка!")
-    await application.run_polling()
+    try:
+        # Создаем application
+        application = Application.builder().token(token).build()
+        
+        # Инициализируем бота
+        bot = FoodBot()
+        bot.setup_handlers(application)
+        
+        # Запускаем бота
+        logging.info("🚀 Бот запускается...")
+        application.run_polling(
+            drop_pending_updates=True,
+            allowed_updates=Update.ALL_TYPES
+        )
+        
+    except Exception as e:
+        logging.error(f"❌ Ошибка запуска бота: {e}")
+    finally:
+        logging.info("🛑 Бот остановлен")
 
 if __name__ == "__main__":
-    asyncio.run(main())
+    main()
