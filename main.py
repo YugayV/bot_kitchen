@@ -814,48 +814,29 @@ import asyncio
 import time
 
 def main():
-    """Основная функция с обработкой конфликтов"""
+    """Основная функция - упрощенная версия"""
     token = os.getenv('BOT_TOKEN')
     if not token:
         logging.error("❌ BOT_TOKEN не найден в переменных окружения")
         return
     
-    max_retries = 3
-    retry_count = 0
-    
-    while retry_count < max_retries:
-        try:
-            # Создаем application
-            application = Application.builder().token(token).build()
-            
-            # Инициализируем бота
-            bot = FoodBot()
-            bot.setup_handlers(application)
-            
-            # Запускаем бота
-            logging.info(f"🚀 Попытка запуска бота #{retry_count + 1}...")
-            application.run_polling(
-                drop_pending_updates=True,
-                allowed_updates=Update.ALL_TYPES,
-                poll_interval=1.0,  # Интервал опроса
-                timeout=10  # Таймаут запроса
-            )
-            break  # Если успешно, выходим из цикла
-            
-        except telegram.error.Conflict as e:
-            retry_count += 1
-            logging.error(f"❌ Конфликт (попытка {retry_count}/{max_retries}): {e}")
-            
-            if retry_count < max_retries:
-                logging.info("🔄 Перезапуск через 10 секунд...")
-                time.sleep(10)
-            else:
-                logging.error("❌ Превышено количество попыток перезапуска")
-                break
-                
-        except Exception as e:
-            logging.error(f"❌ Другая ошибка: {e}")
-            break
+    try:
+        # Создаем application
+        application = Application.builder().token(token).build()
+        
+        # Инициализируем бота
+        bot = FoodBot()
+        bot.setup_handlers(application)
+        
+        # Запускаем бота с минимальными настройками
+        logging.info("🚀 Бот запускается...")
+        application.run_polling(
+            drop_pending_updates=True,
+            allowed_updates=Update.ALL_TYPES
+        )
+        
+    except Exception as e:
+        logging.error(f"❌ Ошибка: {e}")
 
 if __name__ == "__main__":
     main()
