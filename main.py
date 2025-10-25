@@ -44,8 +44,38 @@ TRANSLATIONS = {
         'total': "💰 총액:",
         'checkout': "💳 주문하기",
         'clear_cart': "🗑️ 장바구니 비우기"
+    }, 
+
+    'ru': {
+        # ... существующие переводы ...
+        'checkout_name': "📋 Оформление заказа\n\nПожалуйста, введите ваше имя:",
+        'checkout_phone': "📞 Теперь введите ваш номер телефона:",
+        'checkout_address': "🏠 Введите ваш адрес доставки:",
+        'order_confirm': "✅ Заказ оформлен!",
+        'payment_details': "💳 Оплата заказа\n\n",
+        'payment_amount': "💰 Сумма к оплате:",
+        'bank_details': "🏦 Реквизиты для оплаты:\nIBK: 5536 9138 1234 5678\n Denis",
+        'send_screenshot': "\n\nПосле оплаты отправьте скриншот чека.",
+        'waiting_payment': "⏳ Ожидаем подтверждения оплаты...",
+        'payment_received': "✅ Оплата получена! Заказ передан на кухню.",
+        'admin_notification': "🆕 НОВЫЙ ЗАКАЗ"
+    },
+    'ko': {
+        # ... существующие переводы ...
+        'checkout_name': "📋 주문 작성\n\n이름을 입력해 주세요:",
+        'checkout_phone': "📞 전화번호를 입력해 주세요:",
+        'checkout_address': "🏠 배송 주소를 입력해 주세요:",
+        'order_confirm': "✅ 주문이 완료되었습니다!",
+        'payment_details': "💳 결제\n\n",
+        'payment_amount': "💰 결제 금액:",
+        'bank_details': "🏦 결제 정보:\nIBK: 5536 9138 1234 5678\n Denis",
+        'send_screenshot': "\n\n결제 후 영수증 스크린샷을 보내주세요.",
+        'waiting_payment': "⏳ 결제 확인을 기다리는 중...",
+        'payment_received': "✅ 결제 확인됨! 주문이 조리실로 전달되었습니다.",
+        'admin_notification': "🆕 새 주문"
     }
 }
+
 
 def get_translation(language, key):
     return TRANSLATIONS.get(language, TRANSLATIONS['ru']).get(key, key)
@@ -61,25 +91,44 @@ class FoodBot:
         
         self.dishes = [
             # Первые блюда
-            {'id': 1, 'category_id': 1, 'name_ru': 'Борщ', 'name_ko': '보르시', 'price': 8000, 'weight': '400г'},
-            {'id': 2, 'category_id': 1, 'name_ru': 'Солянка', 'name_ko': '솔랸카', 'price': 8000, 'weight': '350г'},
-            {'id': 3, 'category_id': 1, 'name_ru': 'Шурпа', 'name_ko': '슈르파', 'price': 8000, 'weight': '450г'},
+            {'id': 1, 'category_id': 1, 'name_ru': 'Борщ', 'name_ko': '보르시', 'price': 8000, 'weight': '400г', 
+             'image_url': 'https://img.freepik.com/free-photo/traditional-russian-borscht_140725-300.jpg'},
+
+            {'id': 2, 'category_id': 1, 'name_ru': 'Солянка', 'name_ko': '솔랸카', 'price': 8000, 'weight': '350г', 
+             'image_url': 'https://img.freepik.com/free-photo/russian-solyanka-soup_140725-299.jpg'},
+            
+            {'id': 3, 'category_id': 1, 'name_ru': 'Шурпа', 'name_ko': '슈르파', 'price': 8000, 'weight': '450г',
+             'image_url': 'https://img.freepik.com/free-photo/asian-shurpa-soup_140725-301.jpg'},
+
             {'id': 4, 'category_id': 1, 'name_ru': 'Мастава', 'name_ko': '마스타바', 'price': 8000, 'weight': '400г'},
             {'id': 5, 'category_id': 1, 'name_ru': 'Харчо', 'name_ko': '카르초', 'price': 8000, 'weight': '350г'},
             {'id': 6, 'category_id': 1, 'name_ru': 'Основа для лагмана', 'name_ko': '라그먼의 기초', 'price': 8000, 'weight': '450г'},
+           
             # Вторые блюда
-            {'id': 7, 'category_id': 2, 'name_ru': 'Тушенка говяжья', 'name_ko': '소고기 스튜', 'price': 10000, 'weight': '300г'},
+            {'id': 7, 'category_id': 2, 'name_ru': 'Тушенка говяжья', 'name_ko': '소고기 스튜', 'price': 10000, 'weight': '300г', 
+             'image_url': 'https://img.freepik.com/free-photo/beef-stew-with-vegetables_140725-302.jpg'},
+            
             {'id': 8, 'category_id': 2, 'name_ru': 'Тушенка свинная', 'name_ko': '돼지고기 조림', 'price': 10000, 'weight': '300г'},
-            {'id': 9, 'category_id': 2, 'name_ru': 'Гуляш', 'name_ko': '굴라시', 'price': 8000, 'weight': '350г'},
+            {'id': 9, 'category_id': 2, 'name_ru': 'Гуляш', 'name_ko': '굴라시', 'price': 8000, 'weight': '350г', 
+             'image_url': 'https://img.freepik.com/free-photo/hungarian-goulash_140725-303.jpg'},
+
             {'id': 10, 'category_id': 2, 'name_ru': 'Мясо с грибами', 'name_ko': '버섯을 곁들인 고기', 'price': 9000, 'weight': '350г'},
             {'id': 11, 'category_id': 2, 'name_ru': 'Мясо с картошкой', 'name_ko': '고기와 감자', 'price': 9000, 'weight': '320г'},
-            {'id': 12, 'category_id': 2, 'name_ru': 'Бефстроганов', 'name_ko': '비프 스트로가노프', 'price': 8000, 'weight': '320г'},
+            {'id': 12, 'category_id': 2, 'name_ru': 'Бефстроганов', 'name_ko': '비프 스트로가노프', 'price': 8000, 'weight': '320г', 
+             'image_url': 'https://img.freepik.com/free-photo/beef-stroganoff-with-mushrooms_140725-304.jpg'},
+
             {'id': 13, 'category_id': 2, 'name_ru': 'Основа для  Беша', 'name_ko': '베샤의 기초', 'price': 7000, 'weight': '320г'},
             
             # Стейки
-            {'id': 14, 'category_id': 3, 'name_ru': 'Томогавк', 'name_ko': '토마호크', 'price': 12000, 'weight': '500г'},
-            {'id': 15, 'category_id': 3, 'name_ru': 'Рибай', 'name_ko': '립아이', 'price': 9500, 'weight': '400г'},
-            {'id': 16, 'category_id': 3, 'name_ru': 'Нью-Йорк', 'name_ko': '뉴욕 스테이크', 'price': 8500, 'weight': '350г'},
+            {'id': 14, 'category_id': 3, 'name_ru': 'Томогавк', 'name_ko': '토마호크', 'price': 12000, 'weight': '500г', 
+              'image_url': 'https://img.freepik.com/free-photo/tomahawk-steak_140725-305.jpg'},
+
+            {'id': 15, 'category_id': 3, 'name_ru': 'Рибай', 'name_ko': '립아이', 'price': 9500, 'weight': '400г', 
+             'image_url': 'https://img.freepik.com/free-photo/ribeye-steak_140725-306.jpg'},
+
+            {'id': 16, 'category_id': 3, 'name_ru': 'Нью-Йорк', 'name_ko': '뉴욕 스테이크', 'price': 8500, 'weight': '350г', 
+             'image_url': 'https://img.freepik.com/free-photo/new-york-strip-steak_140725-307.jpg'},
+
             {'id': 17, 'category_id': 3, 'name_ru': 'Т-бон', 'name_ko': '티본', 'price': 8500, 'weight': '350г'}
         ]
         
@@ -219,7 +268,7 @@ class FoodBot:
         )
     
     async def handle_dish(self, update: Update, context: ContextTypes.DEFAULT_TYPE):
-        """Показать информацию о блюде"""
+        """Показать информацию о блюде с изображением"""
         query = update.callback_query
         await query.answer()
         
@@ -240,13 +289,14 @@ class FoodBot:
         if dish['weight']:
             dish_text += f"⚖️ {dish['weight']}\n"
         
-        # Сохраняем ВСЮ информацию о блюде, включая ID
+        # Сохраняем ВСЮ информацию о блюде
         context.user_data['selected_dish'] = {
             'id': dish['id'],
             'name_ru': dish['name_ru'],
             'name_ko': dish['name_ko'], 
             'price': dish['price'],
-            'category_id': dish['category_id']
+            'category_id': dish['category_id'],
+            'image_url': dish.get('image_url', '')
         }
         context.user_data['quantity'] = 1
         
@@ -261,10 +311,24 @@ class FoodBot:
         ]
         reply_markup = InlineKeyboardMarkup(keyboard)
         
+        # Отправляем сообщение с изображением
+        if dish.get('image_url'):
+            try:
+                await query.message.reply_photo(
+                    photo=dish['image_url'],
+                    caption=dish_text + f"\n{get_translation(language, 'choose_category')}",
+                    reply_markup=reply_markup
+                )
+                await query.delete_message()  # Удаляем предыдущее сообщение
+                return
+            except Exception as e:
+                logging.error(f"Ошибка загрузки изображения: {e}")
+        
+        # Если изображение не загрузилось, отправляем текст
         await query.edit_message_text(
             dish_text + f"\n{get_translation(language, 'choose_category')}",
             reply_markup=reply_markup
-        )
+    )
     
     async def handle_quantity(self, update: Update, context: ContextTypes.DEFAULT_TYPE):
         """Изменение количества"""
@@ -409,6 +473,217 @@ class FoodBot:
             reply_markup=reply_markup
         )
     
+    async def handle_checkout(self, update: Update, context: ContextTypes.DEFAULT_TYPE):
+        """Начать оформление заказа"""
+        query = update.callback_query
+        await query.answer()
+        
+        user_id = query.from_user.id
+        language = self.get_user_language(user_id)
+        cart = self.get_user_cart(user_id)
+        
+        if not cart:
+            await query.edit_message_text(get_translation(language, 'cart_empty'))
+            return
+        
+        # Начинаем процесс оформления
+        context.user_data['checkout_step'] = 'name'
+        
+        await query.edit_message_text(get_translation(language, 'checkout_name'))
+
+    async def handle_checkout_input(self, update: Update, context: ContextTypes.DEFAULT_TYPE):
+        """Обработка ввода данных для заказа"""
+        user_id = update.effective_user.id
+        text = update.message.text
+        language = self.get_user_language(user_id)
+        step = context.user_data.get('checkout_step')
+        
+        if step == 'name':
+            context.user_data['order_name'] = text
+            context.user_data['checkout_step'] = 'phone'
+            await update.message.reply_text(get_translation(language, 'checkout_phone'))
+        
+        elif step == 'phone':
+            context.user_data['order_phone'] = text
+            context.user_data['checkout_step'] = 'address'
+            await update.message.reply_text(get_translation(language, 'checkout_address'))
+        
+        elif step == 'address':
+            context.user_data['order_address'] = text
+            await self.finalize_order(update, context)
+
+    async def finalize_order(self, update: Update, context: ContextTypes.DEFAULT_TYPE):
+        """Завершение оформления заказа"""
+        user_id = update.effective_user.id
+        language = self.get_user_language(user_id)
+        cart = self.get_user_cart(user_id)
+        
+        if not cart:
+            await update.message.reply_text(get_translation(language, 'cart_empty'))
+            return
+        
+        # Рассчитываем итоговую сумму
+        total = sum(item['price'] * item['quantity'] for item in cart.values())
+        
+        # Сохраняем заказ
+        order_id = self.save_order(user_id, {
+            'name': context.user_data['order_name'],
+            'phone': context.user_data['order_phone'],
+            'address': context.user_data['order_address'],
+            'total': total,
+            'items': cart
+        })
+        
+        # Показываем реквизиты для оплаты
+        payment_text = (
+            f"{get_translation(language, 'payment_details')}"
+            f"{get_translation(language, 'payment_amount')} {total}won\n\n"
+            f"{get_translation(language, 'bank_details')}"
+            f"{get_translation(language, 'send_screenshot')}"
+        )
+        
+        # Сохраняем информацию о заказе
+        context.user_data['current_order_id'] = order_id
+        context.user_data['waiting_payment'] = True
+        
+        keyboard = [
+            [InlineKeyboardButton("📸 Отправить скриншот оплаты", callback_data="send_screenshot")],
+            [InlineKeyboardButton("🏠 Главное меню", callback_data="back")]
+        ]
+        reply_markup = InlineKeyboardMarkup(keyboard)
+        
+        await update.message.reply_text(
+            payment_text,
+            reply_markup=reply_markup
+        )
+        
+        # Уведомляем администратора
+        await self.notify_admin_about_order(context.bot, order_id, user_id)
+        
+        # Очищаем корзину
+        self.set_user_cart(user_id, {})
+        context.user_data['checkout_step'] = None
+
+    def save_order(self, user_id, order_data):
+        """Сохранить заказ (в реальном проекте - в базу данных)"""
+        # Генерируем ID заказа
+        order_id = f"ORDER_{user_id}_{len(self.user_data_store) + 1}"
+        
+        # Сохраняем заказ
+        if 'orders' not in self.user_data_store:
+            self.user_data_store['orders'] = {}
+        self.user_data_store['orders'][order_id] = {
+            'user_id': user_id,
+            'status': 'waiting_payment',
+            'created_at': 'datetime',  # В реальном проекте использовать datetime
+            **order_data
+        }
+        
+        return order_id
+
+    async def notify_admin_about_order(self, bot, order_id, user_id):
+        """Уведомить администратора о новом заказе"""
+        # ID администратора (замените на реальный)
+        ADMIN_ID = os.getenv('ADMIN_ID', '379494671')
+        
+        order = self.user_data_store['orders'].get(order_id)
+        if not order:
+            return
+        
+        order_text = (
+            f"🆕 НОВЫЙ ЗАКАЗ #{order_id}\n\n"
+            f"👤 Клиент: {order['name']}\n"
+            f"📞 Телефон: {order['phone']}\n"
+            f"🏠 Адрес: {order['address']}\n"
+            f"💰 Сумма: {order['total']}won\n\n"
+            f"📦 Состав заказа:\n"
+        )
+        
+        for item_id, item in order['items'].items():
+            order_text += f"• {item['name']} x{item['quantity']} - {item['price'] * item['quantity']}₽\n"
+        
+        try:
+            await bot.send_message(ADMIN_ID, order_text)
+        except Exception as e:
+            logging.error(f"Ошибка уведомления админа: {e}")
+
+        # Добавьте обработчик для скриншотов
+    async def handle_payment_screenshot(self, update: Update, context: ContextTypes.DEFAULT_TYPE):
+        """Обработка скриншота оплаты"""
+        user_id = update.effective_user.id
+        language = self.get_user_language(user_id)
+        
+        if not context.user_data.get('waiting_payment'):
+            return
+        
+        # Получаем фото
+        photo = update.message.photo[-1] if update.message.photo else None
+        
+        if photo:
+            # В реальном проекте сохраняем файл
+            # file = await photo.get_file()
+            # await file.download_to_drive(f"payments/{user_id}_{datetime.now().strftime('%Y%m%d_%H%M%S')}.jpg")
+            
+            order_id = context.user_data.get('current_order_id')
+            
+            # Обновляем статус заказа
+            if order_id and order_id in self.user_data_store.get('orders', {}):
+                self.user_data_store['orders'][order_id]['status'] = 'payment_received'
+            
+            # Уведомляем пользователя
+            await update.message.reply_text(
+                get_translation(language, 'payment_received')
+            )
+            
+            # Уведомляем администратора
+            await self.notify_admin_about_payment(context.bot, order_id, user_id)
+            
+            context.user_data['waiting_payment'] = False
+            
+            # Показываем главное меню
+            await self.show_main_menu_after_payment(update, context, language)
+
+    async def notify_admin_about_payment(self, bot, order_id, user_id):
+        """Уведомить администратора об оплате"""
+        ADMIN_ID = os.getenv('ADMIN_ID', '379494671')
+        
+        order = self.user_data_store['orders'].get(order_id)
+        if not order:
+            return
+        
+        payment_text = (
+            f"✅ ОПЛАЧЕНО #{order_id}\n\n"
+            f"👤 Клиент: {order['name']}\n"
+            f"📞 Телефон: {order['phone']}\n"
+            f"💰 Сумма: {order['total']}won\n\n"
+            f"📍 Можно готовить и доставлять!"
+        )
+        
+        try:
+            await bot.send_message(ADMIN_ID, payment_text)
+        except Exception as e:
+            logging.error(f"Ошибка уведомления админа об оплате: {e}")
+
+    async def show_main_menu_after_payment(self, update: Update, context: ContextTypes.DEFAULT_TYPE, language):
+        """Показать главное меню после оплаты"""
+        keyboard = [
+            [InlineKeyboardButton("🍽️ " + get_translation(language, 'menu'), callback_data="menu")],
+            [InlineKeyboardButton("🛒 " + get_translation(language, 'cart'), callback_data="cart")],
+            [
+                InlineKeyboardButton("🇰🇷 한국어", callback_data="lang_ko"),
+                InlineKeyboardButton("🇷🇺 Русский", callback_data="lang_ru")
+            ],
+            [InlineKeyboardButton("📞 " + get_translation(language, 'contacts'), callback_data="contacts")]
+        ]
+        
+        reply_markup = InlineKeyboardMarkup(keyboard)
+        
+        if update.message:
+            await update.message.reply_text(
+                get_translation(language, 'welcome'),
+                reply_markup=reply_markup
+            )
+
     async def handle_contacts(self, update: Update, context: ContextTypes.DEFAULT_TYPE):
         """Показать контакты"""
         query = update.callback_query
@@ -452,6 +727,7 @@ class FoodBot:
         language = self.get_user_language(user_id)
         await self.show_main_menu(query, language)
     
+    # В методе setup_handlers добавьте новые обработчики:
     def setup_handlers(self, application):
         """Настройка обработчиков"""
         application.add_handler(CommandHandler("start", self.start))
@@ -465,6 +741,11 @@ class FoodBot:
         application.add_handler(CallbackQueryHandler(self.handle_clear_cart, pattern="^clear_cart$"))
         application.add_handler(CallbackQueryHandler(self.handle_contacts, pattern="^contacts$"))
         application.add_handler(CallbackQueryHandler(self.handle_back, pattern="^back$"))
+        application.add_handler(CallbackQueryHandler(self.handle_checkout, pattern="^checkout$"))
+        
+        # Обработчики сообщений
+        application.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, self.handle_checkout_input))
+        application.add_handler(MessageHandler(filters.PHOTO, self.handle_payment_screenshot))
 
 def main():
     """Основная функция"""
