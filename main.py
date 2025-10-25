@@ -532,6 +532,19 @@ class FoodBot:
             context.user_data['order_address'] = text
             await self.finalize_order(update, context)
 
+    async def handle_confirm_checkout(self, update: Update, context: ContextTypes.DEFAULT_TYPE):
+        """Подтверждение оформления заказа"""
+        query = update.callback_query
+        await query.answer()
+        
+        user_id = query.from_user.id
+        language = self.get_user_language(user_id)
+        
+        # Начинаем процесс оформления
+        context.user_data['checkout_step'] = 'name'
+        
+        await query.edit_message_text(get_translation(language, 'checkout_name'))        
+
     async def finalize_order(self, update: Update, context: ContextTypes.DEFAULT_TYPE):
         """Завершение оформления заказа"""
         user_id = update.effective_user.id
