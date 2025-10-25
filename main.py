@@ -2,7 +2,6 @@ import os
 import logging
 from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup
 from telegram.ext import Application, CommandHandler, CallbackQueryHandler, ContextTypes
-import asyncio
 
 # Настройка логирования
 logging.basicConfig(
@@ -53,7 +52,7 @@ def get_translation(language, key):
 
 class FoodBot:
     def __init__(self):
-        # Вместо базы данных используем встроенные данные
+        # Встроенные данные вместо базы данных
         self.categories = [
             {'id': 1, 'name_ru': '🍲 Первые блюда', 'name_ko': '🍲 첫 번째 요리'},
             {'id': 2, 'name_ru': '🍖 Вторые блюда', 'name_ko': '🍖 두 번째 요리'},
@@ -62,43 +61,32 @@ class FoodBot:
         
         self.dishes = [
             # Первые блюда
-            {'id': 1, 'category_id': 1, 'name_ru': 'Борщ', 'name_ko': '보르시', 
-             'description_ru': 'Ароматный борщ со сметаной', 'description_ko': '사워 크림이 있는 향기로운 보르시',
-             'price': 250, 'weight': '400г'},
-            {'id': 2, 'category_id': 1, 'name_ru': 'Солянка', 'name_ko': '솔랸카',
-             'description_ru': 'Наваристая солянка', 'description_ko': '풍미로운 솔랸카',
-             'price': 280, 'weight': '350г'},
-            {'id': 3, 'category_id': 1, 'name_ru': 'Шурпа', 'name_ko': '슈르파',
-             'description_ru': 'Ароматная шурпа', 'description_ko': '향기로운 슈르파',
-             'price': 300, 'weight': '450г'},
-            
+            {'id': 1, 'category_id': 1, 'name_ru': 'Борщ', 'name_ko': '보르시', 'price': 8000, 'weight': '400г'},
+            {'id': 2, 'category_id': 1, 'name_ru': 'Солянка', 'name_ko': '솔랸카', 'price': 8000, 'weight': '350г'},
+            {'id': 3, 'category_id': 1, 'name_ru': 'Шурпа', 'name_ko': '슈르파', 'price': 8000, 'weight': '450г'},
+            {'id': 4, 'category_id': 1, 'name_ru': 'Мастава', 'name_ko': '마스타바', 'price': 8000, 'weight': '400г'},
+            {'id': 5, 'category_id': 1, 'name_ru': 'Харчо', 'name_ko': '카르초', 'price': 8000, 'weight': '350г'},
+            {'id': 6, 'category_id': 1, 'name_ru': 'Основа для лагмана', 'name_ko': '라그먼의 기초', 'price': 8000, 'weight': '450г'},
             # Вторые блюда
-            {'id': 4, 'category_id': 2, 'name_ru': 'Тушенка говяжья', 'name_ko': '소고기 스튜',
-             'description_ru': 'Нежная тушеная говядина', 'description_ko': '부드러운 소고기 스튜',
-             'price': 350, 'weight': '300г'},
-            {'id': 5, 'category_id': 2, 'name_ru': 'Гуляш', 'name_ko': '굴라시',
-             'description_ru': 'Венгерский гуляш', 'description_ko': '헝가리식 굴라시',
-             'price': 320, 'weight': '350г'},
-            {'id': 6, 'category_id': 2, 'name_ru': 'Бефстроганов', 'name_ko': '비프 스트로가노프',
-             'description_ru': 'Нежное мясо в сметанном соусе', 'description_ko': '사워 크림 소스가 있는 부드러운 고기',
-             'price': 380, 'weight': '320г'},
+            {'id': 7, 'category_id': 2, 'name_ru': 'Тушенка говяжья', 'name_ko': '소고기 스튜', 'price': 10000, 'weight': '300г'},
+            {'id': 8, 'category_id': 2, 'name_ru': 'Тушенка свинная', 'name_ko': '돼지고기 조림', 'price': 10000, 'weight': '300г'},
+            {'id': 9, 'category_id': 2, 'name_ru': 'Гуляш', 'name_ko': '굴라시', 'price': 8000, 'weight': '350г'},
+            {'id': 10, 'category_id': 2, 'name_ru': 'Мясо с грибами', 'name_ko': '버섯을 곁들인 고기', 'price': 9000, 'weight': '350г'},
+            {'id': 11, 'category_id': 2, 'name_ru': 'Мясо с картошкой', 'name_ko': '고기와 감자', 'price': 9000, 'weight': '320г'},
+            {'id': 12, 'category_id': 2, 'name_ru': 'Бефстроганов', 'name_ko': '비프 스트로가노프', 'price': 8000, 'weight': '320г'},
+            {'id': 13, 'category_id': 2, 'name_ru': 'Основа для  Беша', 'name_ko': '베샤의 기초', 'price': 7000, 'weight': '320г'}
             
             # Стейки
-            {'id': 7, 'category_id': 3, 'name_ru': 'Томогавк', 'name_ko': '토마호크',
-             'description_ru': 'Сочный стейк томагавк', 'description_ko': '육즙이 많은 토마호크 스테이크',
-             'price': 1200, 'weight': '500г'},
-            {'id': 8, 'category_id': 3, 'name_ru': 'Рибай', 'name_ko': '립아이',
-             'description_ru': 'Нежный рибай стейк', 'description_ko': '부드러운 립아이 스테이크',
-             'price': 950, 'weight': '400г'},
-            {'id': 9, 'category_id': 3, 'name_ru': 'Нью-Йорк', 'name_ko': '뉴욕 스테이크',
-             'description_ru': 'Классический Нью-Йорк стейк', 'description_ko': '클래식 뉴욕 스테이크',
-             'price': 850, 'weight': '350г'}
+            {'id': 14, 'category_id': 3, 'name_ru': 'Томогавк', 'name_ko': '토마호크', 'price': 12000, 'weight': '500г'},
+            {'id': 15, 'category_id': 3, 'name_ru': 'Рибай', 'name_ko': '립아이', 'price': 9500, 'weight': '400г'},
+            {'id': 16, 'category_id': 3, 'name_ru': 'Нью-Йорк', 'name_ko': '뉴욕 스테이크', 'price': 8500, 'weight': '350г'},
+            {'id': 17, 'category_id': 3, 'name_ru': 'Т-бон', 'name_ko': '티본', 'price': 8500, 'weight': '350г'}
         ]
         
-        # Хранилище для пользователей и корзин в памяти
+        # Хранилище в памяти
         self.user_data_store = {}
-        logging.info("✅ Бот инициализирован (без базы данных)")
-    
+        logging.info("✅ Бот инициализирован")
+
     def get_user_language(self, user_id):
         """Получить язык пользователя"""
         user_data = self.user_data_store.get(user_id, {})
@@ -217,7 +205,7 @@ class FoodBot:
         keyboard = []
         for dish in category_dishes:
             name = dish['name_ko'] if language == 'ko' else dish['name_ru']
-            button_text = f"{name} - {dish['price']}₽"
+            button_text = f"{name} - {dish['price']}won"
             if dish['weight']:
                 button_text += f" ({dish['weight']})"
             keyboard.append([InlineKeyboardButton(button_text, callback_data=f"dish_{dish['id']}")])
@@ -246,17 +234,20 @@ class FoodBot:
             return
         
         name = dish['name_ko'] if language == 'ko' else dish['name_ru']
-        description = dish['description_ko'] if language == 'ko' else dish['description_ru']
         
         dish_text = f"🍽️ {name}\n"
-        dish_text += f"💰 {get_translation(language, 'price')} {dish['price']}₽\n"
+        dish_text += f"💰 {get_translation(language, 'price')} {dish['price']}won\n"
         if dish['weight']:
             dish_text += f"⚖️ {dish['weight']}\n"
-        if description:
-            dish_text += f"📝 {description}\n"
         
-        # Сохраняем выбранное блюдо
-        context.user_data['selected_dish'] = dish
+        # Сохраняем ВСЮ информацию о блюде, включая ID
+        context.user_data['selected_dish'] = {
+            'id': dish['id'],
+            'name_ru': dish['name_ru'],
+            'name_ko': dish['name_ko'], 
+            'price': dish['price'],
+            'category_id': dish['category_id']
+        }
         context.user_data['quantity'] = 1
         
         keyboard = [
@@ -292,9 +283,9 @@ class FoodBot:
         
         context.user_data['quantity'] = new_quantity
         
-        dish = context.user_data['selected_dish']
+        dish_data = context.user_data['selected_dish']
         language = self.get_user_language(query.from_user.id)
-        name = dish['name_ko'] if language == 'ko' else dish['name_ru']
+        name = dish_data['name_ko'] if language == 'ko' else dish_data['name_ru']
         
         keyboard = [
             [
@@ -303,11 +294,11 @@ class FoodBot:
                 InlineKeyboardButton("➕", callback_data="increase")
             ],
             [InlineKeyboardButton(get_translation(language, 'add_to_cart'), callback_data="add_to_cart")],
-            [InlineKeyboardButton(get_translation(language, 'back'), callback_data=f"cat_{dish['category_id']}")]
+            [InlineKeyboardButton(get_translation(language, 'back'), callback_data=f"cat_{dish_data['category_id']}")]
         ]
         reply_markup = InlineKeyboardMarkup(keyboard)
         
-        dish_text = f"🍽️ {name}\n💰 {get_translation(language, 'price')} {dish['price']}₽\n\n{get_translation(language, 'choose_category')}"
+        dish_text = f"🍽️ {name}\n💰 {get_translation(language, 'price')} {dish_data['price']}won\n\n{get_translation(language, 'choose_category')}"
         
         await query.edit_message_text(
             dish_text,
@@ -315,27 +306,34 @@ class FoodBot:
         )
     
     async def handle_add_to_cart(self, update: Update, context: ContextTypes.DEFAULT_TYPE):
-        """Добавить в корзину"""
+        """Добавить в корзину - ИСПРАВЛЕННАЯ ВЕРСИЯ"""
         query = update.callback_query
         await query.answer()
         
         user_id = query.from_user.id
         language = self.get_user_language(user_id)
-        dish = context.user_data['selected_dish']
+        
+        # Получаем данные о выбранном блюде
+        dish_data = context.user_data.get('selected_dish')
+        if not dish_data:
+            await query.edit_message_text("❌ Ошибка: блюдо не выбрано")
+            return
+        
         quantity = context.user_data.get('quantity', 1)
         
         # Получаем текущую корзину
         cart = self.get_user_cart(user_id)
         
-        dish_key = str(dish['id'])
-        name = dish['name_ko'] if language == 'ko' else dish['name_ru']
+        dish_key = str(dish_data['id'])  # Используем ID блюда как ключ
+        name = dish_data['name_ko'] if language == 'ko' else dish_data['name_ru']
         
+        # Добавляем в корзину
         if dish_key in cart:
             cart[dish_key]['quantity'] += quantity
         else:
             cart[dish_key] = {
                 'name': name,
-                'price': dish['price'],
+                'price': dish_data['price'],
                 'quantity': quantity
             }
         
@@ -377,7 +375,7 @@ class FoodBot:
         for item_id, item_data in cart.items():
             item_total = item_data['price'] * item_data['quantity']
             total += item_total
-            cart_text += f"• {item_data['name']} x{item_data['quantity']} - {item_total}₽\n"
+            cart_text += f"• {item_data['name']} x{item_data['quantity']} - {item_total}won\n"
         
         cart_text += f"\n{get_translation(language, 'total')} {total}₽"
         
@@ -422,18 +420,16 @@ class FoodBot:
         contacts_text = {
             'ru': """📞 Контакты компании ФУД:
 
-📞 Телефон: +7 (999) 123-45-67
-📧 Email: info@food-company.ru
-🏠 Адрес: г. Москва, ул. Примерная, д. 1
+📞 Телефон: +82 10-8361-6165
+🏠 Адрес: Ansan
 ⏰ Время работы: 9:00 - 21:00
 
 Доставка по всему городу!""",
             
             'ko': """📞 푸드 컴퍼니 연락처:
 
-📞 전화: +7 (999) 123-45-67
-📧 이메일: info@food-company.ru
-🏠 주소: 모스크바, 프리메르나야 거리 1
+📞 전화: +82 10-8361-6165
+🏠 주소: Ansan
 ⏰ 영업 시간: 9:00 - 21:00
 
 도시 전체 배달 가능!"""
