@@ -74,7 +74,7 @@ class FoodBot:
             {'id': 10, 'category_id': 2, 'name_ru': 'Мясо с грибами', 'name_ko': '버섯을 곁들인 고기', 'price': 9000, 'weight': '350г'},
             {'id': 11, 'category_id': 2, 'name_ru': 'Мясо с картошкой', 'name_ko': '고기와 감자', 'price': 9000, 'weight': '320г'},
             {'id': 12, 'category_id': 2, 'name_ru': 'Бефстроганов', 'name_ko': '비프 스트로가노프', 'price': 8000, 'weight': '320г'},
-            {'id': 13, 'category_id': 2, 'name_ru': 'Основа для  Беша', 'name_ko': '베샤의 기초', 'price': 7000, 'weight': '320г'}
+            {'id': 13, 'category_id': 2, 'name_ru': 'Основа для  Беша', 'name_ko': '베샤의 기초', 'price': 7000, 'weight': '320г'},
             
             # Стейки
             {'id': 14, 'category_id': 3, 'name_ru': 'Томогавк', 'name_ko': '토마호크', 'price': 12000, 'weight': '500г'},
