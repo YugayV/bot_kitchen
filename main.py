@@ -258,7 +258,7 @@ class FoodBot:
     
 
     async def handle_dish(self, update: Update, context: ContextTypes.DEFAULT_TYPE):
-        """Показать информацию о блюде с количеством - ИСПРАВЛЕННАЯ ВЕРСИЯ"""
+        """Показать информацию о блюде с количеством - УЛУЧШЕННАЯ ВЕРСИЯ"""
         query = update.callback_query
         await query.answer()
         
@@ -275,11 +275,12 @@ class FoodBot:
         name = dish['name_ko'] if language == 'ko' else dish['name_ru']
         
         dish_text = f"🍽️ {name}\n"
-        dish_text += f"💰 {get_translation(language, 'price')} {dish['price']}₽\n"
+        dish_text += f"💰 {get_translation(language, 'price')} {dish['price']}won\n"
         if dish['weight']:
             dish_text += f"⚖️ {dish['weight']}\n"
         
-        # Сохраняем ВСЮ информацию о блюде
+        # ОЧИЩАЕМ старые данные и сохраняем ВСЮ информацию о блюде
+        context.user_data.clear()  # Очищаем контекст
         context.user_data['selected_dish'] = {
             'id': dish['id'],
             'name_ru': dish['name_ru'],
@@ -289,6 +290,10 @@ class FoodBot:
             'image_url': dish.get('image_url', '')
         }
         context.user_data['quantity'] = 1  # Сбрасываем количество
+        
+        # ОТЛАДКА: проверяем сохраненные данные
+        logging.info(f"💾 Сохранено блюдо в контекст: {dish['name_ru']} (ID: {dish['id']})")
+        logging.info(f"📝 Данные в контексте: {list(context.user_data.keys())}")
         
         # Клавиатура для выбора количества
         keyboard = [
@@ -324,7 +329,7 @@ class FoodBot:
         )
     
     async def handle_quantity(self, update: Update, context: ContextTypes.DEFAULT_TYPE):
-        """Изменение количества - ИСПРАВЛЕННАЯ ВЕРСИЯ"""
+        """Изменение количества - УЛУЧШЕННАЯ ВЕРСИЯ"""
         query = update.callback_query
         await query.answer()
         
@@ -348,10 +353,14 @@ class FoodBot:
         # Получаем данные о блюде
         dish_data = context.user_data.get('selected_dish')
         if not dish_data:
+            logging.error("❌ Блюдо потеряно в контексте при изменении количества!")
             await query.edit_message_text("❌ Ошибка: блюдо не найдено")
             return
         
         name = dish_data['name_ko'] if language == 'ko' else dish_data['name_ru']
+        
+        # ОТЛАДКА: проверяем данные
+        logging.info(f"🔢 Изменение количества: {current_quantity} -> {new_quantity} для {name}")
         
         # Создаем клавиатуру с новым количеством
         keyboard = [
@@ -366,7 +375,7 @@ class FoodBot:
         reply_markup = InlineKeyboardMarkup(keyboard)
         
         # Текст сообщения
-        dish_text = f"🍽️ {name}\n💰 {get_translation(language, 'price')} {dish_data['price']}₽\n\n{get_translation(language, 'choose_quantity')}"
+        dish_text = f"🍽️ {name}\n💰 {get_translation(language, 'price')} {dish_data['price']}won\n\n{get_translation(language, 'choose_quantity')}"
         
         # Обновляем сообщение
         try:
@@ -383,46 +392,60 @@ class FoodBot:
         await query.answer()  # Убираем "часики"
 
     async def handle_add_to_cart(self, update: Update, context: ContextTypes.DEFAULT_TYPE):
-        """Добавить в корзину - с отладкой"""
+        """Добавить в корзину - ПОЛНОСТЬЮ ИСПРАВЛЕННАЯ ВЕРСИЯ"""
         query = update.callback_query
         await query.answer()
         
         user_id = query.from_user.id
         language = self.get_user_language(user_id)
         
-        # ОТЛАДКА: проверяем что в контексте
+        # ОТЛАДКА: проверяем ВСЕ данные в контексте
         logging.info(f"🔄 Добавление в корзину. Язык: {language}")
-        logging.info(f"📦 Данные в контексте: {context.user_data.keys()}")
+        logging.info(f"📦 Все данные в контексте: {list(context.user_data.keys())}")
         
-        # Получаем данные о выбранном блюде
+        # Получаем данные о выбранном блюде из контекста
         dish_data = context.user_data.get('selected_dish')
-        if not dish_data:
+        
+        # ОТЛАДКА: что именно в selected_dish
+        if dish_data:
+            logging.info(f"🍽️ Найдено блюдо в контексте: {dish_data.get('name_ru', 'Unknown')} (ID: {dish_data.get('id', 'Unknown')})")
+        else:
+            logging.error("❌ Блюдо не найдено в контексте!")
             await query.edit_message_text("❌ Ошибка: блюдо не выбрано")
             return
         
         quantity = context.user_data.get('quantity', 1)
         
-        # ОТЛАДКА: информация о блюде
-        logging.info(f"🍽️ Добавляемое блюдо: {dish_data['name_ru']}, количество: {quantity}")
+        # ОТЛАДКА: информация о блюде и количестве
+        logging.info(f"🍽️ Добавляемое блюдо: {dish_data['name_ru']}, количество: {quantity}, цена: {dish_data['price']}")
         
-        # Получаем текущую корзину
+        # Получаем текущую корзину пользователя
         cart = self.get_user_cart(user_id)
+        logging.info(f"🛒 Текущая корзина до добавления: {len(cart)} items")
         
-        dish_key = str(dish_data['id'])
+        dish_key = str(dish_data['id'])  # Используем ID блюда как ключ
         name = dish_data['name_ko'] if language == 'ko' else dish_data['name_ru']
         
         # Добавляем в корзину
         if dish_key in cart:
             cart[dish_key]['quantity'] += quantity
+            logging.info(f"➕ Увеличено количество для {name}: {cart[dish_key]['quantity']}")
         else:
             cart[dish_key] = {
                 'name': name,
                 'price': dish_data['price'],
                 'quantity': quantity
             }
+            logging.info(f"🆕 Добавлено новое блюдо: {name} x{quantity}")
         
         # Сохраняем корзину
         self.set_user_cart(user_id, cart)
+        
+        # ОТЛАДКА: проверяем сохраненную корзину
+        saved_cart = self.get_user_cart(user_id)
+        logging.info(f"💾 Корзина после сохранения: {len(saved_cart)} items")
+        for item_id, item in saved_cart.items():
+            logging.info(f"   - {item['name']} x{item['quantity']}")
         
         keyboard = [
             [InlineKeyboardButton("🛒 " + get_translation(language, 'cart'), callback_data="cart")],
@@ -444,6 +467,11 @@ class FoodBot:
         language = self.get_user_language(user_id)
         cart = self.get_user_cart(user_id)
         
+        # ОТЛАДКА: показываем содержимое корзины
+        logging.info(f"🛒 Просмотр корзины пользователя {user_id}: {len(cart)} items")
+        for item_id, item in cart.items():
+            logging.info(f"   - {item['name']} x{item['quantity']} - {item['price']}won each")
+        
         if not cart:
             keyboard = [[InlineKeyboardButton("🍽️ " + get_translation(language, 'menu'), callback_data="menu")]]
             reply_markup = InlineKeyboardMarkup(keyboard)
@@ -461,7 +489,7 @@ class FoodBot:
             total += item_total
             cart_text += f"• {item_data['name']} x{item_data['quantity']} - {item_total}won\n"
         
-        cart_text += f"\n{get_translation(language, 'total')} {total}₽"
+        cart_text += f"\n{get_translation(language, 'total')} {total}won"
         
         keyboard = [
             [InlineKeyboardButton("💳 " + get_translation(language, 'checkout'), callback_data="checkout")],
