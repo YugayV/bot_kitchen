@@ -27,7 +27,12 @@ TRANSLATIONS = {
         'cart_items': "🛒 Ваша корзина:",
         'total': "💰 Итого:",
         'checkout': "💳 Оформить заказ",
-        'clear_cart': "🗑️ Очистить корзину"
+        'clear_cart': "🗑️ Очистить корзину",
+        'checkout_order': "💳 Оформить заказ",
+        'order_summary': "📋 Ваш заказ:",
+        'delivery_info': "🚚 Доставка: 30-45 минут",
+        'confirm_order': "✅ Подтвердить заказ",
+        'choose_quantity': "Выберите количество:"
     },
     'ko': {
         'welcome': "🍖 푸드 컴퍼니에 오신 것을 환영합니다!",
@@ -44,36 +49,12 @@ TRANSLATIONS = {
         'cart_items': "🛒 장바구니:",
         'total': "💰 총액:",
         'checkout': "💳 주문하기",
-        'clear_cart': "🗑️ 장바구니 비우기"
-    }, 
-
-    'ru': {
-        # ... существующие переводы ...
-        'checkout_name': "📋 Оформление заказа\n\nПожалуйста, введите ваше имя:",
-        'checkout_phone': "📞 Теперь введите ваш номер телефона:",
-        'checkout_address': "🏠 Введите ваш адрес доставки:",
-        'order_confirm': "✅ Заказ оформлен!",
-        'payment_details': "💳 Оплата заказа\n\n",
-        'payment_amount': "💰 Сумма к оплате:",
-        'bank_details': "🏦 Реквизиты для оплаты:\nIBK: 5536 9138 1234 5678\n Denis",
-        'send_screenshot': "\n\nПосле оплаты отправьте скриншот чека.",
-        'waiting_payment': "⏳ Ожидаем подтверждения оплаты...",
-        'payment_received': "✅ Оплата получена! Заказ передан на кухню.",
-        'admin_notification': "🆕 НОВЫЙ ЗАКАЗ"
-    },
-    'ko': {
-        # ... существующие переводы ...
-        'checkout_name': "📋 주문 작성\n\n이름을 입력해 주세요:",
-        'checkout_phone': "📞 전화번호를 입력해 주세요:",
-        'checkout_address': "🏠 배송 주소를 입력해 주세요:",
-        'order_confirm': "✅ 주문이 완료되었습니다!",
-        'payment_details': "💳 결제\n\n",
-        'payment_amount': "💰 결제 금액:",
-        'bank_details': "🏦 결제 정보:\nIBK: 5536 9138 1234 5678\n Denis",
-        'send_screenshot': "\n\n결제 후 영수증 스크린샷을 보내주세요.",
-        'waiting_payment': "⏳ 결제 확인을 기다리는 중...",
-        'payment_received': "✅ 결제 확인됨! 주문이 조리실로 전달되었습니다.",
-        'admin_notification': "🆕 새 주문"
+        'clear_cart': "🗑️ 장바구니 비우기",
+        'checkout_order': "💳 주문하기",
+        'order_summary': "📋 주문 내용:",
+        'delivery_info': "🚚 배달: 30-45분",
+        'confirm_order': "✅ 주문 확인",
+        'choose_quantity': "수량을 선택하세요:"
     }
 }
 
@@ -138,9 +119,16 @@ class FoodBot:
         logging.info("✅ Бот инициализирован")
 
     def get_user_language(self, user_id):
-        """Получить язык пользователя"""
+        """Получить язык пользователя - с принудительным русским по умолчанию"""
         user_data = self.user_data_store.get(user_id, {})
-        return user_data.get('language', 'ru')
+        language = user_data.get('language', 'ru')
+    
+        # Принудительно устанавливаем русский если язык не распознан
+        if language not in ['ru', 'ko']:
+            language = 'ru'
+            self.set_user_language(user_id, language)
+        
+        return language
     
     def set_user_language(self, user_id, language):
         """Установить язык пользователя"""
@@ -268,8 +256,9 @@ class FoodBot:
             reply_markup=reply_markup
         )
     
+
     async def handle_dish(self, update: Update, context: ContextTypes.DEFAULT_TYPE):
-        """Показать информацию о блюде с изображением"""
+        """Показать информацию о блюде с количеством - ИСПРАВЛЕННАЯ ВЕРСИЯ"""
         query = update.callback_query
         await query.answer()
         
@@ -286,7 +275,7 @@ class FoodBot:
         name = dish['name_ko'] if language == 'ko' else dish['name_ru']
         
         dish_text = f"🍽️ {name}\n"
-        dish_text += f"💰 {get_translation(language, 'price')} {dish['price']}won\n"
+        dish_text += f"💰 {get_translation(language, 'price')} {dish['price']}₽\n"
         if dish['weight']:
             dish_text += f"⚖️ {dish['weight']}\n"
         
@@ -299,12 +288,13 @@ class FoodBot:
             'category_id': dish['category_id'],
             'image_url': dish.get('image_url', '')
         }
-        context.user_data['quantity'] = 1
+        context.user_data['quantity'] = 1  # Сбрасываем количество
         
+        # Клавиатура для выбора количества
         keyboard = [
             [
                 InlineKeyboardButton("➖", callback_data="decrease"),
-                InlineKeyboardButton("1", callback_data="quantity_1"),
+                InlineKeyboardButton("1", callback_data="quantity_display"),
                 InlineKeyboardButton("➕", callback_data="increase")
             ],
             [InlineKeyboardButton(get_translation(language, 'add_to_cart'), callback_data="add_to_cart")],
@@ -312,50 +302,62 @@ class FoodBot:
         ]
         reply_markup = InlineKeyboardMarkup(keyboard)
         
-        # Отправляем сообщение с изображением
+        dish_text += f"\n{get_translation(language, 'choose_quantity')}"
+        
+        # Пытаемся отправить с изображением
         if dish.get('image_url'):
             try:
                 await query.message.reply_photo(
                     photo=dish['image_url'],
-                    caption=dish_text + f"\n{get_translation(language, 'choose_category')}",
+                    caption=dish_text,
                     reply_markup=reply_markup
                 )
-                await query.delete_message()  # Удаляем предыдущее сообщение
+                await query.delete_message()
                 return
             except Exception as e:
                 logging.error(f"Ошибка загрузки изображения: {e}")
         
         # Если изображение не загрузилось, отправляем текст
         await query.edit_message_text(
-            dish_text + f"\n{get_translation(language, 'choose_category')}",
+            dish_text,
             reply_markup=reply_markup
-    )
+        )
     
     async def handle_quantity(self, update: Update, context: ContextTypes.DEFAULT_TYPE):
-        """Изменение количества"""
+        """Изменение количества - ИСПРАВЛЕННАЯ ВЕРСИЯ"""
         query = update.callback_query
         await query.answer()
         
-        action = query.data
+        user_id = query.from_user.id
+        language = self.get_user_language(user_id)
+        
+        # Получаем текущее количество
         current_quantity = context.user_data.get('quantity', 1)
         
-        if action == "increase":
+        # Определяем действие
+        if query.data == "increase":
             new_quantity = current_quantity + 1
-        elif action == "decrease" and current_quantity > 1:
+        elif query.data == "decrease" and current_quantity > 1:
             new_quantity = current_quantity - 1
         else:
             new_quantity = current_quantity
         
+        # Сохраняем новое количество
         context.user_data['quantity'] = new_quantity
         
-        dish_data = context.user_data['selected_dish']
-        language = self.get_user_language(query.from_user.id)
+        # Получаем данные о блюде
+        dish_data = context.user_data.get('selected_dish')
+        if not dish_data:
+            await query.edit_message_text("❌ Ошибка: блюдо не найдено")
+            return
+        
         name = dish_data['name_ko'] if language == 'ko' else dish_data['name_ru']
         
+        # Создаем клавиатуру с новым количеством
         keyboard = [
             [
                 InlineKeyboardButton("➖", callback_data="decrease"),
-                InlineKeyboardButton(str(new_quantity), callback_data=f"quantity_{new_quantity}"),
+                InlineKeyboardButton(str(new_quantity), callback_data="quantity_display"),
                 InlineKeyboardButton("➕", callback_data="increase")
             ],
             [InlineKeyboardButton(get_translation(language, 'add_to_cart'), callback_data="add_to_cart")],
@@ -363,20 +365,34 @@ class FoodBot:
         ]
         reply_markup = InlineKeyboardMarkup(keyboard)
         
-        dish_text = f"🍽️ {name}\n💰 {get_translation(language, 'price')} {dish_data['price']}won\n\n{get_translation(language, 'choose_category')}"
+        # Текст сообщения
+        dish_text = f"🍽️ {name}\n💰 {get_translation(language, 'price')} {dish_data['price']}₽\n\n{get_translation(language, 'choose_quantity')}"
         
-        await query.edit_message_text(
-            dish_text,
-            reply_markup=reply_markup
-        )
+        # Обновляем сообщение
+        try:
+            await query.edit_message_text(
+                dish_text,
+                reply_markup=reply_markup
+            )
+        except Exception as e:
+            logging.error(f"Ошибка обновления сообщения: {e}")
     
+    async def handle_quantity_display(self, update: Update, context: ContextTypes.DEFAULT_TYPE):
+        """Просто показывает текущее количество (не меняет его)"""
+        query = update.callback_query
+        await query.answer()  # Убираем "часики"
+
     async def handle_add_to_cart(self, update: Update, context: ContextTypes.DEFAULT_TYPE):
-        """Добавить в корзину - ИСПРАВЛЕННАЯ ВЕРСИЯ"""
+        """Добавить в корзину - с отладкой"""
         query = update.callback_query
         await query.answer()
         
         user_id = query.from_user.id
         language = self.get_user_language(user_id)
+        
+        # ОТЛАДКА: проверяем что в контексте
+        logging.info(f"🔄 Добавление в корзину. Язык: {language}")
+        logging.info(f"📦 Данные в контексте: {context.user_data.keys()}")
         
         # Получаем данные о выбранном блюде
         dish_data = context.user_data.get('selected_dish')
@@ -386,10 +402,13 @@ class FoodBot:
         
         quantity = context.user_data.get('quantity', 1)
         
+        # ОТЛАДКА: информация о блюде
+        logging.info(f"🍽️ Добавляемое блюдо: {dish_data['name_ru']}, количество: {quantity}")
+        
         # Получаем текущую корзину
         cart = self.get_user_cart(user_id)
         
-        dish_key = str(dish_data['id'])  # Используем ID блюда как ключ
+        dish_key = str(dish_data['id'])
         name = dish_data['name_ko'] if language == 'ko' else dish_data['name_ru']
         
         # Добавляем в корзину
@@ -737,12 +756,14 @@ class FoodBot:
         application.add_handler(CallbackQueryHandler(self.handle_category, pattern="^cat_"))
         application.add_handler(CallbackQueryHandler(self.handle_dish, pattern="^dish_"))
         application.add_handler(CallbackQueryHandler(self.handle_quantity, pattern="^(increase|decrease)$"))
+        application.add_handler(CallbackQueryHandler(self.handle_quantity_display, pattern="^quantity_display$"))
         application.add_handler(CallbackQueryHandler(self.handle_add_to_cart, pattern="^add_to_cart$"))
         application.add_handler(CallbackQueryHandler(self.handle_cart, pattern="^cart$"))
         application.add_handler(CallbackQueryHandler(self.handle_clear_cart, pattern="^clear_cart$"))
         application.add_handler(CallbackQueryHandler(self.handle_contacts, pattern="^contacts$"))
         application.add_handler(CallbackQueryHandler(self.handle_back, pattern="^back$"))
         application.add_handler(CallbackQueryHandler(self.handle_checkout, pattern="^checkout$"))
+        application.add_handler(CallbackQueryHandler(self.handle_confirm_checkout, pattern="^confirm_checkout$"))
         
         # Обработчики сообщений
         application.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, self.handle_checkout_input))
