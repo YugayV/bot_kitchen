@@ -814,29 +814,41 @@ import asyncio
 import time
 
 def main():
-    """Основная функция - упрощенная версия"""
+    """Основная функция с webhook (рекомендуется для продакшена)"""
     token = os.getenv('BOT_TOKEN')
     if not token:
-        logging.error("❌ BOT_TOKEN не найден в переменных окружения")
+        logging.error("❌ BOT_TOKEN не найден")
         return
     
     try:
-        # Создаем application
         application = Application.builder().token(token).build()
         
-        # Инициализируем бота
         bot = FoodBot()
         bot.setup_handlers(application)
         
-        # Запускаем бота с минимальными настройками
-        logging.info("🚀 Бот запускается...")
-        application.run_polling(
-            drop_pending_updates=True,
-            allowed_updates=Update.ALL_TYPES
-        )
+        # Для Railway лучше использовать webhook
+        port = int(os.environ.get('PORT', 8080))
+        webhook_url = os.environ.get('RAILWAY_STATIC_URL')
         
+        if webhook_url:
+            # Webhook режим для продакшена
+            logging.info("🌐 Запуск в режиме webhook...")
+            application.run_webhook(
+                listen="0.0.0.0",
+                port=port,
+                url_path=token,
+                webhook_url=f"{webhook_url}/{token}"
+            )
+        else:
+            # Polling режим для разработки
+            logging.info("🔄 Запуск в режиме polling...")
+            application.run_polling(
+                drop_pending_updates=True,
+                allowed_updates=Update.ALL_TYPES
+            )
+            
     except Exception as e:
-        logging.error(f"❌ Ошибка: {e}")
+        logging.error(f"❌ Ошибка запуска: {e}")
 
 if __name__ == "__main__":
     main()
