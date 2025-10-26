@@ -32,7 +32,16 @@ TRANSLATIONS = {
         'order_summary': "📋 Ваш заказ:",
         'delivery_info': "🚚 Доставка: 30-45 минут",
         'confirm_order': "✅ Подтвердить заказ",
-        'choose_quantity': "Выберите количество:"
+        'choose_quantity': "Выберите количество:",
+        'go_to_cart': "🛒 Перейти в корзину",
+        'checkout_name': "📝 Введите ваше имя:",
+        'checkout_phone': "📞 Введите ваш телефон:",
+        'checkout_address': "🏠 Введите адрес доставки:",
+        'payment_details': "💳 Реквизиты для оплаты:\n\n",
+        'payment_amount': "Сумма к оплате:",
+        'bank_details': "🏦 Банковские реквизиты:\nKB국민은행 1234-56-7890-123\n예금주: 푸드컴퍼니\n\n",
+        'send_screenshot': "📸 После оплаты отправьте скриншот чека",
+        'payment_received': "✅ Спасибо! Ваш платеж получен. Заказ передан на обработку."
     },
     'ko': {
         'welcome': "🍖 푸드 컴퍼니에 오신 것을 환영합니다!",
@@ -54,7 +63,16 @@ TRANSLATIONS = {
         'order_summary': "📋 주문 내용:",
         'delivery_info': "🚚 배달: 30-45분",
         'confirm_order': "✅ 주문 확인",
-        'choose_quantity': "수량을 선택하세요:"
+        'choose_quantity': "수량을 선택하세요:",
+        'go_to_cart': "🛒 장바구니로 이동",
+        'checkout_name': "📝 이름을 입력하세요:",
+        'checkout_phone': "📞 전화번호를 입력하세요:",
+        'checkout_address': "🏠 배달 주소를 입력하세요:",
+        'payment_details': "💳 결제 정보:\n\n",
+        'payment_amount': "결제 금액:",
+        'bank_details': "🏦 은행 정보:\nKB국민은행 1234-56-7890-123\n예금주: 푸드컴퍼니\n\n",
+        'send_screenshot': "📸 결제 후 스크린샷을 보내주세요",
+        'payment_received': "✅ 감사합니다! 결제가 확인되었습니다. 주문이 처리 중입니다."
     }
 }
 
@@ -279,8 +297,7 @@ class FoodBot:
         if dish['weight']:
             dish_text += f"⚖️ {dish['weight']}\n"
         
-        # ОЧИЩАЕМ старые данные и сохраняем ВСЮ информацию о блюде
-        context.user_data.clear()  # Очищаем контекст
+        # Сохраняем информацию о блюде в context.user_data
         context.user_data['selected_dish'] = {
             'id': dish['id'],
             'name_ru': dish['name_ru'],
@@ -293,16 +310,18 @@ class FoodBot:
         
         # ОТЛАДКА: проверяем сохраненные данные
         logging.info(f"💾 Сохранено блюдо в контекст: {dish['name_ru']} (ID: {dish['id']})")
-        logging.info(f"📝 Данные в контексте: {list(context.user_data.keys())}")
         
-        # Клавиатура для выбора количества
+        # Клавиатура для выбора количества с кнопкой корзины
         keyboard = [
             [
                 InlineKeyboardButton("➖", callback_data="decrease"),
                 InlineKeyboardButton("1", callback_data="quantity_display"),
                 InlineKeyboardButton("➕", callback_data="increase")
             ],
-            [InlineKeyboardButton(get_translation(language, 'add_to_cart'), callback_data="add_to_cart")],
+            [
+                InlineKeyboardButton(get_translation(language, 'add_to_cart'), callback_data="add_to_cart"),
+                InlineKeyboardButton(get_translation(language, 'go_to_cart'), callback_data="cart")
+            ],
             [InlineKeyboardButton(get_translation(language, 'back'), callback_data=f"cat_{dish['category_id']}")]
         ]
         reply_markup = InlineKeyboardMarkup(keyboard)
@@ -329,7 +348,7 @@ class FoodBot:
         )
     
     async def handle_quantity(self, update: Update, context: ContextTypes.DEFAULT_TYPE):
-        """Изменение количества - УЛУЧШЕННАЯ ВЕРСИЯ"""
+        """Изменение количества - ИСПРАВЛЕННАЯ ВЕРСИЯ"""
         query = update.callback_query
         await query.answer()
         
@@ -354,6 +373,20 @@ class FoodBot:
         dish_data = context.user_data.get('selected_dish')
         if not dish_data:
             logging.error("❌ Блюдо потеряно в контексте при изменении количества!")
+            
+            # Пытаемся восстановить из callback_data если возможно
+            try:
+                if hasattr(query, 'message') and query.message.reply_markup:
+                    # Ищем кнопку назад чтобы получить category_id
+                    for row in query.message.reply_markup.inline_keyboard:
+                        for button in row:
+                            if button.callback_data and button.callback_data.startswith('cat_'):
+                                category_id = button.callback_data.split('_')[1]
+                                await self.handle_category_from_callback(update, context, category_id)
+                                return
+            except Exception as e:
+                logging.error(f"Ошибка восстановления: {e}")
+            
             await query.edit_message_text("❌ Ошибка: блюдо не найдено")
             return
         
@@ -369,7 +402,10 @@ class FoodBot:
                 InlineKeyboardButton(str(new_quantity), callback_data="quantity_display"),
                 InlineKeyboardButton("➕", callback_data="increase")
             ],
-            [InlineKeyboardButton(get_translation(language, 'add_to_cart'), callback_data="add_to_cart")],
+            [
+                InlineKeyboardButton(get_translation(language, 'add_to_cart'), callback_data="add_to_cart"),
+                InlineKeyboardButton(get_translation(language, 'go_to_cart'), callback_data="cart")
+            ],
             [InlineKeyboardButton(get_translation(language, 'back'), callback_data=f"cat_{dish_data['category_id']}")]
         ]
         reply_markup = InlineKeyboardMarkup(keyboard)
@@ -377,15 +413,52 @@ class FoodBot:
         # Текст сообщения
         dish_text = f"🍽️ {name}\n💰 {get_translation(language, 'price')} {dish_data['price']}won\n\n{get_translation(language, 'choose_quantity')}"
         
-        # Обновляем сообщение
+        # Обновляем сообщение с обработкой ошибок
         try:
             await query.edit_message_text(
                 dish_text,
                 reply_markup=reply_markup
             )
+        except telegram.error.BadRequest as e:
+            if "Message is not modified" in str(e):
+                # Игнорируем ошибку "сообщение не изменено"
+                pass
+            elif "no text in the message" in str(e):
+                # Если нет текста, создаем новое сообщение
+                logging.warning("Создаем новое сообщение вместо редактирования")
+                await query.message.reply_text(
+                    dish_text,
+                    reply_markup=reply_markup
+                )
+                await query.delete_message()
+            else:
+                logging.error(f"Ошибка обновления сообщения: {e}")
         except Exception as e:
-            logging.error(f"Ошибка обновления сообщения: {e}")
+            logging.error(f"Другая ошибка обновления сообщения: {e}")
     
+    async def handle_category_from_callback(self, update: Update, context: ContextTypes.DEFAULT_TYPE, category_id):
+        """Восстановление категории из callback"""
+        query = update.callback_query
+        language = self.get_user_language(query.from_user.id)
+        
+        category_dishes = [d for d in self.dishes if d['category_id'] == int(category_id)]
+        
+        keyboard = []
+        for dish in category_dishes:
+            name = dish['name_ko'] if language == 'ko' else dish['name_ru']
+            button_text = f"{name} - {dish['price']}won"
+            if dish['weight']:
+                button_text += f" ({dish['weight']})"
+            keyboard.append([InlineKeyboardButton(button_text, callback_data=f"dish_{dish['id']}")])
+        
+        keyboard.append([InlineKeyboardButton(get_translation(language, 'back'), callback_data="menu")])
+        reply_markup = InlineKeyboardMarkup(keyboard)
+        
+        await query.edit_message_text(
+            get_translation(language, 'choose_category'),
+            reply_markup=reply_markup
+        )
+
     async def handle_quantity_display(self, update: Update, context: ContextTypes.DEFAULT_TYPE):
         """Просто показывает текущее количество (не меняет его)"""
         query = update.callback_query
@@ -399,29 +472,18 @@ class FoodBot:
         user_id = query.from_user.id
         language = self.get_user_language(user_id)
         
-        # ОТЛАДКА: проверяем ВСЕ данные в контексте
-        logging.info(f"🔄 Добавление в корзину. Язык: {language}")
-        logging.info(f"📦 Все данные в контексте: {list(context.user_data.keys())}")
-        
         # Получаем данные о выбранном блюде из контекста
         dish_data = context.user_data.get('selected_dish')
         
-        # ОТЛАДКА: что именно в selected_dish
-        if dish_data:
-            logging.info(f"🍽️ Найдено блюдо в контексте: {dish_data.get('name_ru', 'Unknown')} (ID: {dish_data.get('id', 'Unknown')})")
-        else:
+        if not dish_data:
             logging.error("❌ Блюдо не найдено в контексте!")
             await query.edit_message_text("❌ Ошибка: блюдо не выбрано")
             return
         
         quantity = context.user_data.get('quantity', 1)
         
-        # ОТЛАДКА: информация о блюде и количестве
-        logging.info(f"🍽️ Добавляемое блюдо: {dish_data['name_ru']}, количество: {quantity}, цена: {dish_data['price']}")
-        
         # Получаем текущую корзину пользователя
         cart = self.get_user_cart(user_id)
-        logging.info(f"🛒 Текущая корзина до добавления: {len(cart)} items")
         
         dish_key = str(dish_data['id'])  # Используем ID блюда как ключ
         name = dish_data['name_ko'] if language == 'ko' else dish_data['name_ru']
@@ -429,23 +491,15 @@ class FoodBot:
         # Добавляем в корзину
         if dish_key in cart:
             cart[dish_key]['quantity'] += quantity
-            logging.info(f"➕ Увеличено количество для {name}: {cart[dish_key]['quantity']}")
         else:
             cart[dish_key] = {
                 'name': name,
                 'price': dish_data['price'],
                 'quantity': quantity
             }
-            logging.info(f"🆕 Добавлено новое блюдо: {name} x{quantity}")
         
         # Сохраняем корзину
         self.set_user_cart(user_id, cart)
-        
-        # ОТЛАДКА: проверяем сохраненную корзину
-        saved_cart = self.get_user_cart(user_id)
-        logging.info(f"💾 Корзина после сохранения: {len(saved_cart)} items")
-        for item_id, item in saved_cart.items():
-            logging.info(f"   - {item['name']} x{item['quantity']}")
         
         keyboard = [
             [InlineKeyboardButton("🛒 " + get_translation(language, 'cart'), callback_data="cart")],
@@ -466,11 +520,6 @@ class FoodBot:
         user_id = query.from_user.id
         language = self.get_user_language(user_id)
         cart = self.get_user_cart(user_id)
-        
-        # ОТЛАДКА: показываем содержимое корзины
-        logging.info(f"🛒 Просмотр корзины пользователя {user_id}: {len(cart)} items")
-        for item_id, item in cart.items():
-            logging.info(f"   - {item['name']} x{item['quantity']} - {item['price']}won each")
         
         if not cart:
             keyboard = [[InlineKeyboardButton("🍽️ " + get_translation(language, 'menu'), callback_data="menu")]]
