@@ -14,6 +14,17 @@ logging.basicConfig(
 TRANSLATIONS = {
     'ru': {
         'welcome': "🍖 Добро пожаловать в ФУД!",
+        'welcome_message': """🌟 <b>Добро пожаловать в ФУД-бот!</b> 🌟
+
+🍽️ Мы рады приветствовать вас в нашем уютном кулинарном мире! 
+
+Здесь вы можете:
+• 📋 Просмотреть наше разнообразное меню
+• 🛒 Собрать любимые блюда в корзину
+• 🚚 Оформить быструю доставку
+• 💳 Оплатить заказ удобным способом
+
+Выберите язык для продолжения:""",
         'menu': "📋 Меню",
         'cart': "🛒 Корзина", 
         'contacts': "📞 Контакты",
@@ -41,10 +52,28 @@ TRANSLATIONS = {
         'payment_amount': "Сумма к оплате:",
         'bank_details': "🏦 Банковские реквизиты:\nKB국민은행 1234-56-7890-123\n예금주: 푸드컴퍼니\n\n",
         'send_screenshot': "📸 После оплаты отправьте скриншот чека",
-        'payment_received': "✅ Спасибо! Ваш платеж получен. Заказ передан на обработку."
+        'payment_received': "✅ Спасибо! Ваш платеж получен. Заказ передан на обработку.",
+        'choose_quantity_btn': "🔢 Выбрать количество",
+        'main_menu': "🏠 Главное меню",
+        'features': "✨ Наши преимущества:",
+        'feature1': "• 🚚 Быстрая доставка 30-45 мин",
+        'feature2': "• 💳 Удобная оплата",
+        'feature3': "• 🍽️ Свежие и вкусные блюда",
+        'feature4': "• 🌍 Доставка по всему городу"
     },
     'ko': {
         'welcome': "🍖 푸드 컴퍼니에 오신 것을 환영합니다!",
+        'welcome_message': """🌟 <b>푸드 봇에 오신 것을 환영합니다!</b> 🌟
+
+🍽️ 아늑한 요리의 세계로 여러분을 초대합니다!
+
+여기서您可以:
+• 📋 다양한 메뉴 확인하기
+• 🛒 좋아하는 요리 장바구니에 담기
+• 🚚 빠른 배달 주문하기
+• 💳 편리한 결제 방법
+
+계속하려면 언어를 선택하세요:""",
         'menu': "📋 메뉴", 
         'cart': "🛒 장바구니",
         'contacts': "📞 연락처",
@@ -72,7 +101,14 @@ TRANSLATIONS = {
         'payment_amount': "결제 금액:",
         'bank_details': "🏦 은행 정보:\nKB국민은행 1234-56-7890-123\n예금주: 푸드컴퍼니\n\n",
         'send_screenshot': "📸 결제 후 스크린샷을 보내주세요",
-        'payment_received': "✅ 감사합니다! 결제가 확인되었습니다. 주문이 처리 중입니다."
+        'payment_received': "✅ 감사합니다! 결제가 확인되었습니다. 주문이 처리 중입니다.",
+        'choose_quantity_btn': "🔢 수량 선택",
+        'main_menu': "🏠 메인 메뉴",
+        'features': "✨ 우리의 장점:",
+        'feature1': "• 🚚 빠른 배달 30-45분",
+        'feature2': "• 💳 편리한 결제",
+        'feature3': "• 🍽️ 신선하고 맛있는 요리",
+        'feature4': "• 🌍 도시 전체 배달"
     }
 }
 
@@ -92,49 +128,63 @@ class FoodBot:
         self.dishes = [
             # Первые блюда
             {'id': 1, 'category_id': 1, 'name_ru': 'Борщ', 'name_ko': '보르시', 'price': 8000, 'weight': '400г', 
-             'image_url': 'https://img.freepik.com/free-photo/traditional-russian-borscht_140725-300.jpg'},
-
+             'image_file': 'borsch.jpg'},
             {'id': 2, 'category_id': 1, 'name_ru': 'Солянка', 'name_ko': '솔랸카', 'price': 8000, 'weight': '350г', 
-             'image_url': 'https://img.freepik.com/free-photo/russian-solyanka-soup_140725-299.jpg'},
-            
+             'image_file': 'solyanka.jpg'},
             {'id': 3, 'category_id': 1, 'name_ru': 'Шурпа', 'name_ko': '슈르파', 'price': 8000, 'weight': '450г',
-             'image_url': 'https://img.freepik.com/free-photo/asian-shurpa-soup_140725-301.jpg'},
-
-            {'id': 4, 'category_id': 1, 'name_ru': 'Мастава', 'name_ko': '마스타바', 'price': 8000, 'weight': '400г'},
-            {'id': 5, 'category_id': 1, 'name_ru': 'Харчо', 'name_ko': '카르초', 'price': 8000, 'weight': '350г'},
-            {'id': 6, 'category_id': 1, 'name_ru': 'Основа для лагмана', 'name_ko': '라그먼의 기초', 'price': 8000, 'weight': '450г'},
+             'image_file': 'shurpa.jpg'},
+            {'id': 4, 'category_id': 1, 'name_ru': 'Мастава', 'name_ko': '마스타바', 'price': 8000, 'weight': '400г',
+             'image_file': 'mastava.jpg'},
+            {'id': 5, 'category_id': 1, 'name_ru': 'Харчо', 'name_ko': '카르초', 'price': 8000, 'weight': '350г',
+             'image_file': 'kharcho.jpg'},
+            {'id': 6, 'category_id': 1, 'name_ru': 'Основа для лагмана', 'name_ko': '라그먼의 기초', 'price': 8000, 'weight': '450г',
+             'image_file': 'lagman.jpg'},
            
             # Вторые блюда
             {'id': 7, 'category_id': 2, 'name_ru': 'Тушенка говяжья', 'name_ko': '소고기 스튜', 'price': 10000, 'weight': '300г', 
-             'image_url': 'https://img.freepik.com/free-photo/beef-stew-with-vegetables_140725-302.jpg'},
-            
-            {'id': 8, 'category_id': 2, 'name_ru': 'Тушенка свинная', 'name_ko': '돼지고기 조림', 'price': 10000, 'weight': '300г'},
+             'image_file': 'toshonka_govyadina.jpg'},
+            {'id': 8, 'category_id': 2, 'name_ru': 'Тушенка свинная', 'name_ko': '돼지고기 조림', 'price': 10000, 'weight': '300г',
+             'image_file': 'tushonka_svinya.jpg'},
             {'id': 9, 'category_id': 2, 'name_ru': 'Гуляш', 'name_ko': '굴라시', 'price': 8000, 'weight': '350г', 
-             'image_url': 'https://img.freepik.com/free-photo/hungarian-goulash_140725-303.jpg'},
-
-            {'id': 10, 'category_id': 2, 'name_ru': 'Мясо с грибами', 'name_ko': '버섯을 곁들인 고기', 'price': 9000, 'weight': '350г'},
-            {'id': 11, 'category_id': 2, 'name_ru': 'Мясо с картошкой', 'name_ko': '고기와 감자', 'price': 9000, 'weight': '320г'},
+             'image_file': 'gulyash.jpg'},
+            {'id': 10, 'category_id': 2, 'name_ru': 'Мясо с грибами', 'name_ko': '버섯을 곁들인 고기', 'price': 9000, 'weight': '350г',
+             'image_file': 'meat_mushrooms.jpg'},
+            {'id': 11, 'category_id': 2, 'name_ru': 'Мясо с картошкой', 'name_ko': '고기와 감자', 'price': 9000, 'weight': '320г',
+             'image_file': 'meat_potatoes.jpg'},
             {'id': 12, 'category_id': 2, 'name_ru': 'Бефстроганов', 'name_ko': '비프 스트로가노프', 'price': 8000, 'weight': '320г', 
-             'image_url': 'https://img.freepik.com/free-photo/beef-stroganoff-with-mushrooms_140725-304.jpg'},
-
-            {'id': 13, 'category_id': 2, 'name_ru': 'Основа для  Беша', 'name_ko': '베샤의 기초', 'price': 7000, 'weight': '320г'},
+             'image_file': 'beef_stroganoff.jpg'},
+            {'id': 13, 'category_id': 2, 'name_ru': 'Основа для Беша', 'name_ko': '베샤의 기초', 'price': 7000, 'weight': '320г',
+             'image_file': 'besh_basis.jpg'},
             
             # Стейки
             {'id': 14, 'category_id': 3, 'name_ru': 'Томогавк', 'name_ko': '토마호크', 'price': 12000, 'weight': '500г', 
-              'image_url': 'https://img.freepik.com/free-photo/tomahawk-steak_140725-305.jpg'},
-
+             'image_file': 'tomahawk.jpg'},
             {'id': 15, 'category_id': 3, 'name_ru': 'Рибай', 'name_ko': '립아이', 'price': 9500, 'weight': '400г', 
-             'image_url': 'https://img.freepik.com/free-photo/ribeye-steak_140725-306.jpg'},
-
+             'image_file': 'ribeye.jpg'},
             {'id': 16, 'category_id': 3, 'name_ru': 'Нью-Йорк', 'name_ko': '뉴욕 스테이크', 'price': 8500, 'weight': '350г', 
-             'image_url': 'https://img.freepik.com/free-photo/new-york-strip-steak_140725-307.jpg'},
-
-            {'id': 17, 'category_id': 3, 'name_ru': 'Т-бон', 'name_ko': '티본', 'price': 8500, 'weight': '350г'}
+             'image_file': 'new_york.jpg'},
+            {'id': 17, 'category_id': 3, 'name_ru': 'Т-бон', 'name_ko': '티본', 'price': 8500, 'weight': '350г',
+             'image_file': 't_bone.jpg'}
         ]
         
         # Хранилище в памяти
         self.user_data_store = {}
         logging.info("✅ Бот инициализирован")
+
+    def get_image_path(self, image_file):
+        """Получить путь к изображению"""
+        if not image_file:
+            return None
+        
+        # Проверяем существование файла в папке images
+        images_dir = os.path.join(os.path.dirname(__file__), 'images')
+        image_path = os.path.join(images_dir, image_file)
+        
+        if os.path.exists(image_path):
+            return image_path
+        else:
+            logging.warning(f"⚠️ Файл изображения не найден: {image_path}")
+            return None
 
     def get_user_language(self, user_id):
         """Получить язык пользователя - с принудительным русским по умолчанию"""
@@ -166,25 +216,33 @@ class FoodBot:
         self.user_data_store[user_id]['cart'] = cart
     
     async def start(self, update: Update, context: ContextTypes.DEFAULT_TYPE):
-        """Команда /start"""
+        """Команда /start - КРАСИВОЕ ПРИВЕТСТВИЕ"""
         user_id = update.effective_user.id
+        user_name = update.effective_user.first_name
         language = self.get_user_language(user_id)
         
+        # Персонализированное приветствие
+        welcome_text = f"👋 <b>Привет, {user_name}!</b>\n\n" if language == 'ru' else f"👋 <b>안녕하세요, {user_name}님!</b>\n\n"
+        welcome_text += get_translation(language, 'welcome_message')
+        
+        # Добавляем преимущества
+        welcome_text += f"\n\n{get_translation(language, 'features')}\n"
+        welcome_text += f"{get_translation(language, 'feature1')}\n"
+        welcome_text += f"{get_translation(language, 'feature2')}\n"
+        welcome_text += f"{get_translation(language, 'feature3')}\n"
+        welcome_text += f"{get_translation(language, 'feature4')}"
+        
         keyboard = [
-            [InlineKeyboardButton("🍽️ " + get_translation(language, 'menu'), callback_data="menu")],
-            [InlineKeyboardButton("🛒 " + get_translation(language, 'cart'), callback_data="cart")],
-            [
-                InlineKeyboardButton("🇰🇷 한국어", callback_data="lang_ko"),
-                InlineKeyboardButton("🇷🇺 Русский", callback_data="lang_ru")
-            ],
-            [InlineKeyboardButton("📞 " + get_translation(language, 'contacts'), callback_data="contacts")]
+            [InlineKeyboardButton("🇷🇺 Русский", callback_data="lang_ru"),
+             InlineKeyboardButton("🇰🇷 한국어", callback_data="lang_ko")]
         ]
         
         reply_markup = InlineKeyboardMarkup(keyboard)
         
         await update.message.reply_text(
-            get_translation(language, 'welcome') + "\n\n" + get_translation(language, 'choose_language'),
-            reply_markup=reply_markup
+            welcome_text,
+            reply_markup=reply_markup,
+            parse_mode='HTML'
         )
     
     async def handle_language(self, update: Update, context: ContextTypes.DEFAULT_TYPE):
@@ -193,28 +251,55 @@ class FoodBot:
         await query.answer()
         
         user_id = query.from_user.id
+        user_name = query.from_user.first_name
         language = query.data.split('_')[1]
         
         self.set_user_language(user_id, language)
-        await self.show_main_menu(query, language)
-    
-    async def show_main_menu(self, query, language):
-        """Показать главное меню"""
+        
+        # Приветствие после выбора языка
+        welcome_after_lang = f"👋 <b>Привет, {user_name}!</b>\n\n" if language == 'ru' else f"👋 <b>안녕하세요, {user_name}님!</b>\n\n"
+        welcome_after_lang += get_translation(language, 'welcome')
+        
         keyboard = [
             [InlineKeyboardButton("🍽️ " + get_translation(language, 'menu'), callback_data="menu")],
             [InlineKeyboardButton("🛒 " + get_translation(language, 'cart'), callback_data="cart")],
+            [InlineKeyboardButton("📞 " + get_translation(language, 'contacts'), callback_data="contacts")],
             [
                 InlineKeyboardButton("🇰🇷 한국어", callback_data="lang_ko"),
                 InlineKeyboardButton("🇷🇺 Русский", callback_data="lang_ru")
-            ],
-            [InlineKeyboardButton("📞 " + get_translation(language, 'contacts'), callback_data="contacts")]
+            ]
         ]
         
         reply_markup = InlineKeyboardMarkup(keyboard)
         
         await query.edit_message_text(
-            get_translation(language, 'welcome'),
-            reply_markup=reply_markup
+            welcome_after_lang,
+            reply_markup=reply_markup,
+            parse_mode='HTML'
+        )
+    
+    async def show_main_menu(self, query, language):
+        """Показать главное меню"""
+        user_name = query.from_user.first_name
+        
+        welcome_text = f"🍖 <b>Добро пожаловать, {user_name}!</b>" if language == 'ru' else f"🍖 <b>환영합니다, {user_name}님!</b>"
+        
+        keyboard = [
+            [InlineKeyboardButton("🍽️ " + get_translation(language, 'menu'), callback_data="menu")],
+            [InlineKeyboardButton("🛒 " + get_translation(language, 'cart'), callback_data="cart")],
+            [InlineKeyboardButton("📞 " + get_translation(language, 'contacts'), callback_data="contacts")],
+            [
+                InlineKeyboardButton("🇰🇷 한국어", callback_data="lang_ko"),
+                InlineKeyboardButton("🇷🇺 Русский", callback_data="lang_ru")
+            ]
+        ]
+        
+        reply_markup = InlineKeyboardMarkup(keyboard)
+        
+        await query.edit_message_text(
+            welcome_text,
+            reply_markup=reply_markup,
+            parse_mode='HTML'
         )
     
     async def handle_menu(self, update: Update, context: ContextTypes.DEFAULT_TYPE):
@@ -274,9 +359,8 @@ class FoodBot:
             reply_markup=reply_markup
         )
     
-
     async def handle_dish(self, update: Update, context: ContextTypes.DEFAULT_TYPE):
-        """Показать информацию о блюде с количеством - УЛУЧШЕННАЯ ВЕРСИЯ"""
+        """Показать информацию о блюде - СНАЧАЛА КАРТИНКА, ПОТОМ ВЫБОР КОЛИЧЕСТВА"""
         query = update.callback_query
         await query.answer()
         
@@ -292,11 +376,6 @@ class FoodBot:
         
         name = dish['name_ko'] if language == 'ko' else dish['name_ru']
         
-        dish_text = f"🍽️ {name}\n"
-        dish_text += f"💰 {get_translation(language, 'price')} {dish['price']}won\n"
-        if dish['weight']:
-            dish_text += f"⚖️ {dish['weight']}\n"
-        
         # Сохраняем информацию о блюде в context.user_data
         context.user_data['selected_dish'] = {
             'id': dish['id'],
@@ -304,14 +383,61 @@ class FoodBot:
             'name_ko': dish['name_ko'], 
             'price': dish['price'],
             'category_id': dish['category_id'],
-            'image_url': dish.get('image_url', '')
+            'image_file': dish.get('image_file', '')
         }
         context.user_data['quantity'] = 1  # Сбрасываем количество
         
-        # ОТЛАДКА: проверяем сохраненные данные
-        logging.info(f"💾 Сохранено блюдо в контекст: {dish['name_ru']} (ID: {dish['id']})")
+        # ШАГ 1: Отправляем картинку блюда (если есть)
+        image_path = self.get_image_path(dish.get('image_file'))
         
-        # Клавиатура для выбора количества с кнопкой корзины
+        if image_path:
+            try:
+                # Создаем клавиатуру для перехода к выбору количества
+                keyboard = [
+                    [InlineKeyboardButton("🔢 " + get_translation(language, 'choose_quantity_btn'), callback_data="show_quantity")],
+                    [InlineKeyboardButton(get_translation(language, 'back'), callback_data=f"cat_{dish['category_id']}")]
+                ]
+                reply_markup = InlineKeyboardMarkup(keyboard)
+                
+                # Текст для картинки
+                caption = f"🍽️ <b>{name}</b>\n💰 {get_translation(language, 'price')} {dish['price']}won"
+                if dish['weight']:
+                    caption += f"\n⚖️ {dish['weight']}"
+                caption += f"\n\n👇 Нажмите кнопку ниже чтобы выбрать количество"
+                
+                # Отправляем фото из файла
+                with open(image_path, 'rb') as photo:
+                    await query.message.reply_photo(
+                        photo=photo,
+                        caption=caption,
+                        reply_markup=reply_markup,
+                        parse_mode='HTML'
+                    )
+                await query.delete_message()
+                return
+                
+            except Exception as e:
+                logging.error(f"Ошибка загрузки изображения: {e}")
+                # Если картинка не загрузилась, переходим к выбору количества
+                await self.show_quantity_selection(update, context, dish, language)
+        else:
+            # Если нет картинки, сразу переходим к выбору количества
+            await self.show_quantity_selection(update, context, dish, language)
+
+    async def show_quantity_selection(self, update: Update, context: ContextTypes.DEFAULT_TYPE, dish, language):
+        """Показать выбор количества (отдельное сообщение)"""
+        query = update.callback_query
+        user_id = query.from_user.id if query else update.effective_user.id
+        
+        name = dish['name_ko'] if language == 'ko' else dish['name_ru']
+        
+        # Текст для выбора количества
+        quantity_text = f"🍽️ <b>{name}</b>\n💰 {get_translation(language, 'price')} {dish['price']}won"
+        if dish['weight']:
+            quantity_text += f"\n⚖️ {dish['weight']}"
+        quantity_text += f"\n\n{get_translation(language, 'choose_quantity')}"
+        
+        # Клавиатура для выбора количества
         keyboard = [
             [
                 InlineKeyboardButton("➖", callback_data="decrease"),
@@ -319,36 +445,49 @@ class FoodBot:
                 InlineKeyboardButton("➕", callback_data="increase")
             ],
             [
-                InlineKeyboardButton(get_translation(language, 'add_to_cart'), callback_data="add_to_cart"),
-                InlineKeyboardButton(get_translation(language, 'go_to_cart'), callback_data="cart")
+                InlineKeyboardButton("🛒 " + get_translation(language, 'add_to_cart'), callback_data="add_to_cart"),
+                InlineKeyboardButton("📦 " + get_translation(language, 'go_to_cart'), callback_data="cart")
             ],
             [InlineKeyboardButton(get_translation(language, 'back'), callback_data=f"cat_{dish['category_id']}")]
         ]
         reply_markup = InlineKeyboardMarkup(keyboard)
         
-        dish_text += f"\n{get_translation(language, 'choose_quantity')}"
+        if query:
+            await query.edit_message_text(
+                quantity_text,
+                reply_markup=reply_markup,
+                parse_mode='HTML'
+            )
+        else:
+            await update.message.reply_text(
+                quantity_text,
+                reply_markup=reply_markup,
+                parse_mode='HTML'
+            )
+
+    async def handle_show_quantity(self, update: Update, context: ContextTypes.DEFAULT_TYPE):
+        """Обработка кнопки перехода к выбору количества"""
+        query = update.callback_query
+        await query.answer()
         
-        # Пытаемся отправить с изображением
-        if dish.get('image_url'):
-            try:
-                await query.message.reply_photo(
-                    photo=dish['image_url'],
-                    caption=dish_text,
-                    reply_markup=reply_markup
-                )
-                await query.delete_message()
-                return
-            except Exception as e:
-                logging.error(f"Ошибка загрузки изображения: {e}")
+        user_id = query.from_user.id
+        language = self.get_user_language(user_id)
         
-        # Если изображение не загрузилось, отправляем текст
-        await query.edit_message_text(
-            dish_text,
-            reply_markup=reply_markup
-        )
-    
+        dish_data = context.user_data.get('selected_dish')
+        if not dish_data:
+            await query.edit_message_text("❌ Ошибка: блюдо не найдено")
+            return
+        
+        # Находим полные данные блюда
+        dish = next((d for d in self.dishes if d['id'] == dish_data['id']), None)
+        if not dish:
+            await query.edit_message_text("❌ Ошибка: блюдо не найдено")
+            return
+        
+        await self.show_quantity_selection(update, context, dish, language)
+
     async def handle_quantity(self, update: Update, context: ContextTypes.DEFAULT_TYPE):
-        """Изменение количества - ИСПРАВЛЕННАЯ ВЕРСИЯ"""
+        """Изменение количества"""
         query = update.callback_query
         await query.answer()
         
@@ -373,27 +512,10 @@ class FoodBot:
         dish_data = context.user_data.get('selected_dish')
         if not dish_data:
             logging.error("❌ Блюдо потеряно в контексте при изменении количества!")
-            
-            # Пытаемся восстановить из callback_data если возможно
-            try:
-                if hasattr(query, 'message') and query.message.reply_markup:
-                    # Ищем кнопку назад чтобы получить category_id
-                    for row in query.message.reply_markup.inline_keyboard:
-                        for button in row:
-                            if button.callback_data and button.callback_data.startswith('cat_'):
-                                category_id = button.callback_data.split('_')[1]
-                                await self.handle_category_from_callback(update, context, category_id)
-                                return
-            except Exception as e:
-                logging.error(f"Ошибка восстановления: {e}")
-            
             await query.edit_message_text("❌ Ошибка: блюдо не найдено")
             return
         
         name = dish_data['name_ko'] if language == 'ko' else dish_data['name_ru']
-        
-        # ОТЛАДКА: проверяем данные
-        logging.info(f"🔢 Изменение количества: {current_quantity} -> {new_quantity} для {name}")
         
         # Создаем клавиатуру с новым количеством
         keyboard = [
@@ -403,61 +525,29 @@ class FoodBot:
                 InlineKeyboardButton("➕", callback_data="increase")
             ],
             [
-                InlineKeyboardButton(get_translation(language, 'add_to_cart'), callback_data="add_to_cart"),
-                InlineKeyboardButton(get_translation(language, 'go_to_cart'), callback_data="cart")
+                InlineKeyboardButton("🛒 " + get_translation(language, 'add_to_cart'), callback_data="add_to_cart"),
+                InlineKeyboardButton("📦 " + get_translation(language, 'go_to_cart'), callback_data="cart")
             ],
             [InlineKeyboardButton(get_translation(language, 'back'), callback_data=f"cat_{dish_data['category_id']}")]
         ]
         reply_markup = InlineKeyboardMarkup(keyboard)
         
         # Текст сообщения
-        dish_text = f"🍽️ {name}\n💰 {get_translation(language, 'price')} {dish_data['price']}won\n\n{get_translation(language, 'choose_quantity')}"
+        dish_text = f"🍽️ <b>{name}</b>\n💰 {get_translation(language, 'price')} {dish_data['price']}won\n\n{get_translation(language, 'choose_quantity')}"
         
         # Обновляем сообщение с обработкой ошибок
         try:
             await query.edit_message_text(
                 dish_text,
-                reply_markup=reply_markup
+                reply_markup=reply_markup,
+                parse_mode='HTML'
             )
         except telegram.error.BadRequest as e:
             if "Message is not modified" in str(e):
                 # Игнорируем ошибку "сообщение не изменено"
                 pass
-            elif "no text in the message" in str(e):
-                # Если нет текста, создаем новое сообщение
-                logging.warning("Создаем новое сообщение вместо редактирования")
-                await query.message.reply_text(
-                    dish_text,
-                    reply_markup=reply_markup
-                )
-                await query.delete_message()
             else:
                 logging.error(f"Ошибка обновления сообщения: {e}")
-        except Exception as e:
-            logging.error(f"Другая ошибка обновления сообщения: {e}")
-    
-    async def handle_category_from_callback(self, update: Update, context: ContextTypes.DEFAULT_TYPE, category_id):
-        """Восстановление категории из callback"""
-        query = update.callback_query
-        language = self.get_user_language(query.from_user.id)
-        
-        category_dishes = [d for d in self.dishes if d['category_id'] == int(category_id)]
-        
-        keyboard = []
-        for dish in category_dishes:
-            name = dish['name_ko'] if language == 'ko' else dish['name_ru']
-            button_text = f"{name} - {dish['price']}won"
-            if dish['weight']:
-                button_text += f" ({dish['weight']})"
-            keyboard.append([InlineKeyboardButton(button_text, callback_data=f"dish_{dish['id']}")])
-        
-        keyboard.append([InlineKeyboardButton(get_translation(language, 'back'), callback_data="menu")])
-        reply_markup = InlineKeyboardMarkup(keyboard)
-        
-        await query.edit_message_text(
-            get_translation(language, 'choose_category'),
-            reply_markup=reply_markup
-        )
 
     async def handle_quantity_display(self, update: Update, context: ContextTypes.DEFAULT_TYPE):
         """Просто показывает текущее количество (не меняет его)"""
@@ -465,7 +555,7 @@ class FoodBot:
         await query.answer()  # Убираем "часики"
 
     async def handle_add_to_cart(self, update: Update, context: ContextTypes.DEFAULT_TYPE):
-        """Добавить в корзину - ПОЛНОСТЬЮ ИСПРАВЛЕННАЯ ВЕРСИЯ"""
+        """Добавить в корзину"""
         query = update.callback_query
         await query.answer()
         
@@ -507,9 +597,12 @@ class FoodBot:
         ]
         reply_markup = InlineKeyboardMarkup(keyboard)
         
+        success_message = f"✅ <b>{name}</b> x{quantity} {get_translation(language, 'add_to_cart')}!"
+        
         await query.edit_message_text(
-            f"✅ {name} x{quantity} {get_translation(language, 'add_to_cart')}!",
-            reply_markup=reply_markup
+            success_message,
+            reply_markup=reply_markup,
+            parse_mode='HTML'
         )
     
     async def handle_cart(self, update: Update, context: ContextTypes.DEFAULT_TYPE):
@@ -525,12 +618,12 @@ class FoodBot:
             keyboard = [[InlineKeyboardButton("🍽️ " + get_translation(language, 'menu'), callback_data="menu")]]
             reply_markup = InlineKeyboardMarkup(keyboard)
             await query.edit_message_text(
-                get_translation(language, 'cart_empty'),
+                "🛒 " + get_translation(language, 'cart_empty'),
                 reply_markup=reply_markup
             )
             return
         
-        cart_text = get_translation(language, 'cart_items') + "\n\n"
+        cart_text = "🛒 <b>" + get_translation(language, 'cart_items') + "</b>\n\n"
         total = 0
         
         for item_id, item_data in cart.items():
@@ -538,7 +631,7 @@ class FoodBot:
             total += item_total
             cart_text += f"• {item_data['name']} x{item_data['quantity']} - {item_total}won\n"
         
-        cart_text += f"\n{get_translation(language, 'total')} {total}won"
+        cart_text += f"\n💰 <b>{get_translation(language, 'total')} {total}won</b>"
         
         keyboard = [
             [InlineKeyboardButton("💳 " + get_translation(language, 'checkout'), callback_data="checkout")],
@@ -549,7 +642,8 @@ class FoodBot:
         
         await query.edit_message_text(
             cart_text,
-            reply_markup=reply_markup
+            reply_markup=reply_markup,
+            parse_mode='HTML'
         )
     
     async def handle_clear_cart(self, update: Update, context: ContextTypes.DEFAULT_TYPE):
@@ -566,7 +660,7 @@ class FoodBot:
         reply_markup = InlineKeyboardMarkup(keyboard)
         
         await query.edit_message_text(
-            get_translation(language, 'cart_empty'),
+            "🛒 " + get_translation(language, 'cart_empty'),
             reply_markup=reply_markup
         )
     
@@ -586,7 +680,7 @@ class FoodBot:
         # Начинаем процесс оформления
         context.user_data['checkout_step'] = 'name'
         
-        await query.edit_message_text(get_translation(language, 'checkout_name'))
+        await query.edit_message_text("📝 " + get_translation(language, 'checkout_name'))
 
     async def handle_checkout_input(self, update: Update, context: ContextTypes.DEFAULT_TYPE):
         """Обработка ввода данных для заказа"""
@@ -598,29 +692,16 @@ class FoodBot:
         if step == 'name':
             context.user_data['order_name'] = text
             context.user_data['checkout_step'] = 'phone'
-            await update.message.reply_text(get_translation(language, 'checkout_phone'))
+            await update.message.reply_text("📞 " + get_translation(language, 'checkout_phone'))
         
         elif step == 'phone':
             context.user_data['order_phone'] = text
             context.user_data['checkout_step'] = 'address'
-            await update.message.reply_text(get_translation(language, 'checkout_address'))
+            await update.message.reply_text("🏠 " + get_translation(language, 'checkout_address'))
         
         elif step == 'address':
             context.user_data['order_address'] = text
             await self.finalize_order(update, context)
-
-    async def handle_confirm_checkout(self, update: Update, context: ContextTypes.DEFAULT_TYPE):
-        """Подтверждение оформления заказа"""
-        query = update.callback_query
-        await query.answer()
-        
-        user_id = query.from_user.id
-        language = self.get_user_language(user_id)
-        
-        # Начинаем процесс оформления
-        context.user_data['checkout_step'] = 'name'
-        
-        await query.edit_message_text(get_translation(language, 'checkout_name'))        
 
     async def finalize_order(self, update: Update, context: ContextTypes.DEFAULT_TYPE):
         """Завершение оформления заказа"""
@@ -646,10 +727,10 @@ class FoodBot:
         
         # Показываем реквизиты для оплаты
         payment_text = (
-            f"{get_translation(language, 'payment_details')}"
-            f"{get_translation(language, 'payment_amount')} {total}won\n\n"
+            f"💳 <b>{get_translation(language, 'payment_details')}</b>\n"
+            f"{get_translation(language, 'payment_amount')} <b>{total}won</b>\n\n"
             f"{get_translation(language, 'bank_details')}"
-            f"{get_translation(language, 'send_screenshot')}"
+            f"📸 {get_translation(language, 'send_screenshot')}"
         )
         
         # Сохраняем информацию о заказе
@@ -658,13 +739,14 @@ class FoodBot:
         
         keyboard = [
             [InlineKeyboardButton("📸 Отправить скриншот оплаты", callback_data="send_screenshot")],
-            [InlineKeyboardButton("🏠 Главное меню", callback_data="back")]
+            [InlineKeyboardButton("🏠 " + get_translation(language, 'main_menu'), callback_data="back")]
         ]
         reply_markup = InlineKeyboardMarkup(keyboard)
         
         await update.message.reply_text(
             payment_text,
-            reply_markup=reply_markup
+            reply_markup=reply_markup,
+            parse_mode='HTML'
         )
         
         # Уведомляем администратора
@@ -701,7 +783,7 @@ class FoodBot:
             return
         
         order_text = (
-            f"🆕 НОВЫЙ ЗАКАЗ #{order_id}\n\n"
+            f"🆕 <b>НОВЫЙ ЗАКАЗ #{order_id}</b>\n\n"
             f"👤 Клиент: {order['name']}\n"
             f"📞 Телефон: {order['phone']}\n"
             f"🏠 Адрес: {order['address']}\n"
@@ -713,11 +795,10 @@ class FoodBot:
             order_text += f"• {item['name']} x{item['quantity']} - {item['price'] * item['quantity']}₽\n"
         
         try:
-            await bot.send_message(ADMIN_ID, order_text)
+            await bot.send_message(ADMIN_ID, order_text, parse_mode='HTML')
         except Exception as e:
             logging.error(f"Ошибка уведомления админа: {e}")
 
-        # Добавьте обработчик для скриншотов
     async def handle_payment_screenshot(self, update: Update, context: ContextTypes.DEFAULT_TYPE):
         """Обработка скриншота оплаты"""
         user_id = update.effective_user.id
@@ -730,10 +811,6 @@ class FoodBot:
         photo = update.message.photo[-1] if update.message.photo else None
         
         if photo:
-            # В реальном проекте сохраняем файл
-            # file = await photo.get_file()
-            # await file.download_to_drive(f"payments/{user_id}_{datetime.now().strftime('%Y%m%d_%H%M%S')}.jpg")
-            
             order_id = context.user_data.get('current_order_id')
             
             # Обновляем статус заказа
@@ -742,7 +819,7 @@ class FoodBot:
             
             # Уведомляем пользователя
             await update.message.reply_text(
-                get_translation(language, 'payment_received')
+                "✅ " + get_translation(language, 'payment_received')
             )
             
             # Уведомляем администратора
@@ -762,7 +839,7 @@ class FoodBot:
             return
         
         payment_text = (
-            f"✅ ОПЛАЧЕНО #{order_id}\n\n"
+            f"✅ <b>ОПЛАЧЕНО #{order_id}</b>\n\n"
             f"👤 Клиент: {order['name']}\n"
             f"📞 Телефон: {order['phone']}\n"
             f"💰 Сумма: {order['total']}won\n\n"
@@ -770,28 +847,33 @@ class FoodBot:
         )
         
         try:
-            await bot.send_message(ADMIN_ID, payment_text)
+            await bot.send_message(ADMIN_ID, payment_text, parse_mode='HTML')
         except Exception as e:
             logging.error(f"Ошибка уведомления админа об оплате: {e}")
 
     async def show_main_menu_after_payment(self, update: Update, context: ContextTypes.DEFAULT_TYPE, language):
         """Показать главное меню после оплаты"""
+        user_name = update.effective_user.first_name
+        
+        welcome_text = f"🍖 <b>Спасибо за заказ, {user_name}!</b>\n\nМы уже начали готовить ваш заказ! 🍽️" if language == 'ru' else f"🍖 <b>주문해 주셔서 감사합니다, {user_name}님!</b>\n\n이미 주문 준비를 시작했습니다! 🍽️"
+        
         keyboard = [
             [InlineKeyboardButton("🍽️ " + get_translation(language, 'menu'), callback_data="menu")],
             [InlineKeyboardButton("🛒 " + get_translation(language, 'cart'), callback_data="cart")],
+            [InlineKeyboardButton("📞 " + get_translation(language, 'contacts'), callback_data="contacts")],
             [
                 InlineKeyboardButton("🇰🇷 한국어", callback_data="lang_ko"),
                 InlineKeyboardButton("🇷🇺 Русский", callback_data="lang_ru")
-            ],
-            [InlineKeyboardButton("📞 " + get_translation(language, 'contacts'), callback_data="contacts")]
+            ]
         ]
         
         reply_markup = InlineKeyboardMarkup(keyboard)
         
         if update.message:
             await update.message.reply_text(
-                get_translation(language, 'welcome'),
-                reply_markup=reply_markup
+                welcome_text,
+                reply_markup=reply_markup,
+                parse_mode='HTML'
             )
 
     async def handle_contacts(self, update: Update, context: ContextTypes.DEFAULT_TYPE):
@@ -803,21 +885,21 @@ class FoodBot:
         language = self.get_user_language(user_id)
         
         contacts_text = {
-            'ru': """📞 Контакты компании ФУД:
+            'ru': """📞 <b>Контакты компании ФУД</b>
 
 📞 Телефон: +82 10-8361-6165
 🏠 Адрес: Ansan
 ⏰ Время работы: 9:00 - 21:00
 
-Доставка по всему городу!""",
+🚚 <b>Доставка по всему городу!</b>""",
             
-            'ko': """📞 푸드 컴퍼니 연락처:
+            'ko': """📞 <b>푸드 컴퍼니 연락처</b>
 
 📞 전화: +82 10-8361-6165
 🏠 주소: Ansan
 ⏰ 영업 시간: 9:00 - 21:00
 
-도시 전체 배달 가능!"""
+🚚 <b>도시 전체 배달 가능!</b>"""
         }
         
         keyboard = [[InlineKeyboardButton(get_translation(language, 'back'), callback_data="back")]]
@@ -825,7 +907,8 @@ class FoodBot:
         
         await query.edit_message_text(
             contacts_text.get(language, contacts_text['ru']),
-            reply_markup=reply_markup
+            reply_markup=reply_markup,
+            parse_mode='HTML'
         )
     
     async def handle_back(self, update: Update, context: ContextTypes.DEFAULT_TYPE):
@@ -837,7 +920,6 @@ class FoodBot:
         language = self.get_user_language(user_id)
         await self.show_main_menu(query, language)
     
-    # В методе setup_handlers добавьте новые обработчики:
     def setup_handlers(self, application):
         """Настройка обработчиков"""
         application.add_handler(CommandHandler("start", self.start))
@@ -845,6 +927,7 @@ class FoodBot:
         application.add_handler(CallbackQueryHandler(self.handle_menu, pattern="^menu$"))
         application.add_handler(CallbackQueryHandler(self.handle_category, pattern="^cat_"))
         application.add_handler(CallbackQueryHandler(self.handle_dish, pattern="^dish_"))
+        application.add_handler(CallbackQueryHandler(self.handle_show_quantity, pattern="^show_quantity$"))
         application.add_handler(CallbackQueryHandler(self.handle_quantity, pattern="^(increase|decrease)$"))
         application.add_handler(CallbackQueryHandler(self.handle_quantity_display, pattern="^quantity_display$"))
         application.add_handler(CallbackQueryHandler(self.handle_add_to_cart, pattern="^add_to_cart$"))
@@ -858,9 +941,6 @@ class FoodBot:
         # Обработчики сообщений
         application.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, self.handle_checkout_input))
         application.add_handler(MessageHandler(filters.PHOTO, self.handle_payment_screenshot))
-
-import asyncio
-import time
 
 def main():
     """Основная функция с webhook (рекомендуется для продакшена)"""
