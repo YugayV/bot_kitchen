@@ -59,7 +59,8 @@ TRANSLATIONS = {
         'feature1': "• 🚚 Быстрая доставка 30-45 мин",
         'feature2': "• 💳 Удобная оплата",
         'feature3': "• 🍽️ Свежие и вкусные блюда",
-        'feature4': "• 🌍 Доставка по всему городу"
+        'feature4': "• 🌍 Доставка по всему городу",
+        'start_command': "🔄 Перезапустить бота"
     },
     'ko': {
         'welcome': "🍖 푸드 컴퍼니에 오신 것을 환영합니다!",
@@ -108,7 +109,8 @@ TRANSLATIONS = {
         'feature1': "• 🚚 빠른 배달 30-45분",
         'feature2': "• 💳 편리한 결제",
         'feature3': "• 🍽️ 신선하고 맛있는 요리",
-        'feature4': "• 🌍 도시 전체 배달"
+        'feature4': "• 🌍 도시 전체 배달",
+        'start_command': "🔄 봇 다시 시작"
     }
 }
 
@@ -264,6 +266,7 @@ class FoodBot:
             [InlineKeyboardButton("🍽️ " + get_translation(language, 'menu'), callback_data="menu")],
             [InlineKeyboardButton("🛒 " + get_translation(language, 'cart'), callback_data="cart")],
             [InlineKeyboardButton("📞 " + get_translation(language, 'contacts'), callback_data="contacts")],
+            [InlineKeyboardButton("🔄 " + get_translation(language, 'start_command'), callback_data="start_command")],
             [
                 InlineKeyboardButton("🇰🇷 한국어", callback_data="lang_ko"),
                 InlineKeyboardButton("🇷🇺 Русский", callback_data="lang_ru")
@@ -288,6 +291,7 @@ class FoodBot:
             [InlineKeyboardButton("🍽️ " + get_translation(language, 'menu'), callback_data="menu")],
             [InlineKeyboardButton("🛒 " + get_translation(language, 'cart'), callback_data="cart")],
             [InlineKeyboardButton("📞 " + get_translation(language, 'contacts'), callback_data="contacts")],
+            [InlineKeyboardButton("🔄 " + get_translation(language, 'start_command'), callback_data="start_command")],
             [
                 InlineKeyboardButton("🇰🇷 한국어", callback_data="lang_ko"),
                 InlineKeyboardButton("🇷🇺 Русский", callback_data="lang_ru")
@@ -469,13 +473,24 @@ class FoodBot:
                     reply_markup=reply_markup,
                     parse_mode='HTML'
                 )
-            except telegram.error.BadRequest:
-                # Если не можем редактировать (сообщение с фото), создаем новое
-                await query.message.reply_text(
-                    quantity_text,
-                    reply_markup=reply_markup,
-                    parse_mode='HTML'
-                )
+            except telegram.error.BadRequest as e:
+                if "Message is not modified" in str(e):
+                    # Игнорируем ошибку "сообщение не изменено"
+                    pass
+                elif "There is no text in the message to edit" in str(e):
+                    # Если пытаемся редактировать сообщение без текста (например, с фото)
+                    await query.message.reply_text(
+                        quantity_text,
+                        reply_markup=reply_markup,
+                        parse_mode='HTML'
+                    )
+                else:
+                    logging.error(f"Ошибка редактирования сообщения: {e}")
+                    await query.message.reply_text(
+                        quantity_text,
+                        reply_markup=reply_markup,
+                        parse_mode='HTML'
+                    )
         else:
             await update.message.reply_text(
                 quantity_text,
@@ -570,8 +585,20 @@ class FoodBot:
             if "Message is not modified" in str(e):
                 # Игнорируем ошибку "сообщение не изменено"
                 pass
+            elif "There is no text in the message to edit" in str(e):
+                # Если пытаемся редактировать сообщение без текста
+                await query.message.reply_text(
+                    dish_text,
+                    reply_markup=reply_markup,
+                    parse_mode='HTML'
+                )
             else:
                 logging.error(f"Ошибка обновления сообщения: {e}")
+                await query.message.reply_text(
+                    dish_text,
+                    reply_markup=reply_markup,
+                    parse_mode='HTML'
+                )
 
     async def handle_quantity_display(self, update: Update, context: ContextTypes.DEFAULT_TYPE):
         """Просто показывает текущее количество (не меняет его)"""
@@ -623,11 +650,21 @@ class FoodBot:
         
         success_message = f"✅ <b>{name}</b> x{quantity} {get_translation(language, 'add_to_cart')}!"
         
-        await query.edit_message_text(
-            success_message,
-            reply_markup=reply_markup,
-            parse_mode='HTML'
-        )
+        try:
+            await query.edit_message_text(
+                success_message,
+                reply_markup=reply_markup,
+                parse_mode='HTML'
+            )
+        except telegram.error.BadRequest as e:
+            if "There is no text in the message to edit" in str(e):
+                await query.message.reply_text(
+                    success_message,
+                    reply_markup=reply_markup,
+                    parse_mode='HTML'
+                )
+            else:
+                raise
     
     async def handle_cart(self, update: Update, context: ContextTypes.DEFAULT_TYPE):
         """Показать корзину"""
@@ -641,10 +678,17 @@ class FoodBot:
         if not cart:
             keyboard = [[InlineKeyboardButton("🍽️ " + get_translation(language, 'menu'), callback_data="menu")]]
             reply_markup = InlineKeyboardMarkup(keyboard)
-            await query.edit_message_text(
-                "🛒 " + get_translation(language, 'cart_empty'),
-                reply_markup=reply_markup
-            )
+            try:
+                await query.edit_message_text(
+                    "🛒 " + get_translation(language, 'cart_empty'),
+                    reply_markup=reply_markup
+                )
+            except telegram.error.BadRequest as e:
+                if "There is no text in the message to edit" in str(e):
+                    await query.message.reply_text(
+                        "🛒 " + get_translation(language, 'cart_empty'),
+                        reply_markup=reply_markup
+                    )
             return
         
         cart_text = "🛒 <b>" + get_translation(language, 'cart_items') + "</b>\n\n"
@@ -664,11 +708,19 @@ class FoodBot:
         ]
         reply_markup = InlineKeyboardMarkup(keyboard)
         
-        await query.edit_message_text(
-            cart_text,
-            reply_markup=reply_markup,
-            parse_mode='HTML'
-        )
+        try:
+            await query.edit_message_text(
+                cart_text,
+                reply_markup=reply_markup,
+                parse_mode='HTML'
+            )
+        except telegram.error.BadRequest as e:
+            if "There is no text in the message to edit" in str(e):
+                await query.message.reply_text(
+                    cart_text,
+                    reply_markup=reply_markup,
+                    parse_mode='HTML'
+                )
     
     async def handle_clear_cart(self, update: Update, context: ContextTypes.DEFAULT_TYPE):
         """Очистить корзину"""
@@ -683,13 +735,20 @@ class FoodBot:
         keyboard = [[InlineKeyboardButton("🍽️ " + get_translation(language, 'menu'), callback_data="menu")]]
         reply_markup = InlineKeyboardMarkup(keyboard)
         
-        await query.edit_message_text(
-            "🛒 " + get_translation(language, 'cart_empty'),
-            reply_markup=reply_markup
-        )
+        try:
+            await query.edit_message_text(
+                "🗑️ " + get_translation(language, 'cart_empty'),
+                reply_markup=reply_markup
+            )
+        except telegram.error.BadRequest as e:
+            if "There is no text in the message to edit" in str(e):
+                await query.message.reply_text(
+                    "🗑️ " + get_translation(language, 'cart_empty'),
+                    reply_markup=reply_markup
+                )
     
     async def handle_checkout(self, update: Update, context: ContextTypes.DEFAULT_TYPE):
-        """Начать оформление заказа"""
+        """Оформление заказа"""
         query = update.callback_query
         await query.answer()
         
@@ -698,208 +757,133 @@ class FoodBot:
         cart = self.get_user_cart(user_id)
         
         if not cart:
-            await query.edit_message_text(get_translation(language, 'cart_empty'))
+            keyboard = [[InlineKeyboardButton("🍽️ " + get_translation(language, 'menu'), callback_data="menu")]]
+            reply_markup = InlineKeyboardMarkup(keyboard)
+            try:
+                await query.edit_message_text(
+                    "🛒 " + get_translation(language, 'cart_empty'),
+                    reply_markup=reply_markup
+                )
+            except telegram.error.BadRequest as e:
+                if "There is no text in the message to edit" in str(e):
+                    await query.message.reply_text(
+                        "🛒 " + get_translation(language, 'cart_empty'),
+                        reply_markup=reply_markup
+                    )
             return
         
-        # Начинаем процесс оформления
-        context.user_data['checkout_step'] = 'name'
+        # Создаем сводку заказа
+        order_summary = "📋 <b>" + get_translation(language, 'order_summary') + "</b>\n\n"
+        total = 0
         
-        await query.edit_message_text("📝 " + get_translation(language, 'checkout_name'))
-
-    async def handle_checkout_input(self, update: Update, context: ContextTypes.DEFAULT_TYPE):
-        """Обработка ввода данных для заказа"""
-        user_id = update.effective_user.id
-        text = update.message.text
-        language = self.get_user_language(user_id)
-        step = context.user_data.get('checkout_step')
+        for item_id, item_data in cart.items():
+            item_total = item_data['price'] * item_data['quantity']
+            total += item_total
+            order_summary += f"• {item_data['name']} x{item_data['quantity']} - {item_total}won\n"
         
-        if step == 'name':
-            context.user_data['order_name'] = text
-            context.user_data['checkout_step'] = 'phone'
-            await update.message.reply_text("📞 " + get_translation(language, 'checkout_phone'))
+        order_summary += f"\n💰 <b>{get_translation(language, 'total')} {total}won</b>"
+        order_summary += f"\n\n🚚 {get_translation(language, 'delivery_info')}"
         
-        elif step == 'phone':
-            context.user_data['order_phone'] = text
-            context.user_data['checkout_step'] = 'address'
-            await update.message.reply_text("🏠 " + get_translation(language, 'checkout_address'))
+        keyboard = [
+            [InlineKeyboardButton("✅ " + get_translation(language, 'confirm_order'), callback_data="confirm_order")],
+            [InlineKeyboardButton("🛒 " + get_translation(language, 'back'), callback_data="cart")]
+        ]
+        reply_markup = InlineKeyboardMarkup(keyboard)
         
-        elif step == 'address':
-            context.user_data['order_address'] = text
-            await self.finalize_order(update, context)
-
-    async def finalize_order(self, update: Update, context: ContextTypes.DEFAULT_TYPE):
-        """Завершение оформления заказа"""
-        user_id = update.effective_user.id
+        try:
+            await query.edit_message_text(
+                order_summary,
+                reply_markup=reply_markup,
+                parse_mode='HTML'
+            )
+        except telegram.error.BadRequest as e:
+            if "There is no text in the message to edit" in str(e):
+                await query.message.reply_text(
+                    order_summary,
+                    reply_markup=reply_markup,
+                    parse_mode='HTML'
+                )
+    
+    async def handle_confirm_order(self, update: Update, context: ContextTypes.DEFAULT_TYPE):
+        """Подтверждение заказа"""
+        query = update.callback_query
+        await query.answer()
+        
+        user_id = query.from_user.id
         language = self.get_user_language(user_id)
         cart = self.get_user_cart(user_id)
         
         if not cart:
-            await update.message.reply_text(get_translation(language, 'cart_empty'))
+            keyboard = [[InlineKeyboardButton("🍽️ " + get_translation(language, 'menu'), callback_data="menu")]]
+            reply_markup = InlineKeyboardMarkup(keyboard)
+            try:
+                await query.edit_message_text(
+                    "🛒 " + get_translation(language, 'cart_empty'),
+                    reply_markup=reply_markup
+                )
+            except telegram.error.BadRequest as e:
+                if "There is no text in the message to edit" in str(e):
+                    await query.message.reply_text(
+                        "🛒 " + get_translation(language, 'cart_empty'),
+                        reply_markup=reply_markup
+                    )
             return
         
         # Рассчитываем итоговую сумму
-        total = sum(item['price'] * item['quantity'] for item in cart.values())
+        total = sum(item_data['price'] * item_data['quantity'] for item_data in cart.values())
         
-        # Сохраняем заказ
-        order_id = self.save_order(user_id, {
-            'name': context.user_data['order_name'],
-            'phone': context.user_data['order_phone'],
-            'address': context.user_data['order_address'],
-            'total': total,
-            'items': cart
-        })
-        
-        # Показываем реквизиты для оплаты
-        payment_text = (
-            f"💳 <b>{get_translation(language, 'payment_details')}</b>\n"
-            f"{get_translation(language, 'payment_amount')} <b>{total}won</b>\n\n"
-            f"{get_translation(language, 'bank_details')}"
-            f"📸 {get_translation(language, 'send_screenshot')}"
-        )
-        
-        # Сохраняем информацию о заказе
-        context.user_data['current_order_id'] = order_id
-        context.user_data['waiting_payment'] = True
+        # Создаем сообщение с реквизитами
+        payment_message = get_translation(language, 'payment_details')
+        payment_message += get_translation(language, 'bank_details')
+        payment_message += f"💵 {get_translation(language, 'payment_amount')} <b>{total}won</b>\n\n"
+        payment_message += get_translation(language, 'send_screenshot')
         
         keyboard = [
-            [InlineKeyboardButton("📸 Отправить скриншот оплаты", callback_data="send_screenshot")],
-            [InlineKeyboardButton("🏠 " + get_translation(language, 'main_menu'), callback_data="back")]
+            [InlineKeyboardButton("✅ " + get_translation(language, 'payment_received'), callback_data="payment_done")],
+            [InlineKeyboardButton("🛒 " + get_translation(language, 'cart'), callback_data="cart")]
         ]
         reply_markup = InlineKeyboardMarkup(keyboard)
         
-        await update.message.reply_text(
-            payment_text,
-            reply_markup=reply_markup,
-            parse_mode='HTML'
-        )
-        
-        # Уведомляем администратора
-        await self.notify_admin_about_order(context.bot, order_id, user_id)
-        
-        # Очищаем корзину
-        self.set_user_cart(user_id, {})
-        context.user_data['checkout_step'] = None
-
-    def save_order(self, user_id, order_data):
-        """Сохранить заказ (в реальном проекте - в базу данных)"""
-        # Генерируем ID заказа
-        order_id = f"ORDER_{user_id}_{len(self.user_data_store) + 1}"
-        
-        # Сохраняем заказ
-        if 'orders' not in self.user_data_store:
-            self.user_data_store['orders'] = {}
-        self.user_data_store['orders'][order_id] = {
-            'user_id': user_id,
-            'status': 'waiting_payment',
-            'created_at': 'datetime',  # В реальном проекте использовать datetime
-            **order_data
-        }
-        
-        return order_id
-
-    async def notify_admin_about_order(self, bot, order_id, user_id):
-        """Уведомить администратора о новом заказе"""
-        # ID администратора (замените на реальный)
-        ADMIN_ID = os.getenv('ADMIN_ID', '379494671')
-        
-        order = self.user_data_store['orders'].get(order_id)
-        if not order:
-            return
-        
-        order_text = (
-            f"🆕 <b>НОВЫЙ ЗАКАЗ #{order_id}</b>\n\n"
-            f"👤 Клиент: {order['name']}\n"
-            f"📞 Телефон: {order['phone']}\n"
-            f"🏠 Адрес: {order['address']}\n"
-            f"💰 Сумма: {order['total']}won\n\n"
-            f"📦 Состав заказа:\n"
-        )
-        
-        for item_id, item in order['items'].items():
-            order_text += f"• {item['name']} x{item['quantity']} - {item['price'] * item['quantity']}₽\n"
-        
         try:
-            await bot.send_message(ADMIN_ID, order_text, parse_mode='HTML')
-        except Exception as e:
-            logging.error(f"Ошибка уведомления админа: {e}")
-
-    async def handle_payment_screenshot(self, update: Update, context: ContextTypes.DEFAULT_TYPE):
-        """Обработка скриншота оплаты"""
-        user_id = update.effective_user.id
-        language = self.get_user_language(user_id)
-        
-        if not context.user_data.get('waiting_payment'):
-            return
-        
-        # Получаем фото
-        photo = update.message.photo[-1] if update.message.photo else None
-        
-        if photo:
-            order_id = context.user_data.get('current_order_id')
-            
-            # Обновляем статус заказа
-            if order_id and order_id in self.user_data_store.get('orders', {}):
-                self.user_data_store['orders'][order_id]['status'] = 'payment_received'
-            
-            # Уведомляем пользователя
-            await update.message.reply_text(
-                "✅ " + get_translation(language, 'payment_received')
-            )
-            
-            # Уведомляем администратора
-            await self.notify_admin_about_payment(context.bot, order_id, user_id)
-            
-            context.user_data['waiting_payment'] = False
-            
-            # Показываем главное меню
-            await self.show_main_menu_after_payment(update, context, language)
-
-    async def notify_admin_about_payment(self, bot, order_id, user_id):
-        """Уведомить администратора об оплате"""
-        ADMIN_ID = os.getenv('ADMIN_ID', '379494671')
-        
-        order = self.user_data_store['orders'].get(order_id)
-        if not order:
-            return
-        
-        payment_text = (
-            f"✅ <b>ОПЛАЧЕНО #{order_id}</b>\n\n"
-            f"👤 Клиент: {order['name']}\n"
-            f"📞 Телефон: {order['phone']}\n"
-            f"💰 Сумма: {order['total']}won\n\n"
-            f"📍 Можно готовить и доставлять!"
-        )
-        
-        try:
-            await bot.send_message(ADMIN_ID, payment_text, parse_mode='HTML')
-        except Exception as e:
-            logging.error(f"Ошибка уведомления админа об оплате: {e}")
-
-    async def show_main_menu_after_payment(self, update: Update, context: ContextTypes.DEFAULT_TYPE, language):
-        """Показать главное меню после оплаты"""
-        user_name = update.effective_user.first_name
-        
-        welcome_text = f"🍖 <b>Спасибо за заказ, {user_name}!</b>\n\nМы уже начали готовить ваш заказ! 🍽️" if language == 'ru' else f"🍖 <b>주문해 주셔서 감사합니다, {user_name}님!</b>\n\n이미 주문 준비를 시작했습니다! 🍽️"
-        
-        keyboard = [
-            [InlineKeyboardButton("🍽️ " + get_translation(language, 'menu'), callback_data="menu")],
-            [InlineKeyboardButton("🛒 " + get_translation(language, 'cart'), callback_data="cart")],
-            [InlineKeyboardButton("📞 " + get_translation(language, 'contacts'), callback_data="contacts")],
-            [
-                InlineKeyboardButton("🇰🇷 한국어", callback_data="lang_ko"),
-                InlineKeyboardButton("🇷🇺 Русский", callback_data="lang_ru")
-            ]
-        ]
-        
-        reply_markup = InlineKeyboardMarkup(keyboard)
-        
-        if update.message:
-            await update.message.reply_text(
-                welcome_text,
+            await query.edit_message_text(
+                payment_message,
                 reply_markup=reply_markup,
                 parse_mode='HTML'
             )
-
+        except telegram.error.BadRequest as e:
+            if "There is no text in the message to edit" in str(e):
+                await query.message.reply_text(
+                    payment_message,
+                    reply_markup=reply_markup,
+                    parse_mode='HTML'
+                )
+    
+    async def handle_payment_done(self, update: Update, context: ContextTypes.DEFAULT_TYPE):
+        """Обработка подтверждения оплаты"""
+        query = update.callback_query
+        await query.answer()
+        
+        user_id = query.from_user.id
+        language = self.get_user_language(user_id)
+        
+        # Очищаем корзину после оплаты
+        self.set_user_cart(user_id, {})
+        
+        keyboard = [[InlineKeyboardButton("🏠 " + get_translation(language, 'main_menu'), callback_data="back")]]
+        reply_markup = InlineKeyboardMarkup(keyboard)
+        
+        try:
+            await query.edit_message_text(
+                "✅ " + get_translation(language, 'payment_received'),
+                reply_markup=reply_markup
+            )
+        except telegram.error.BadRequest as e:
+            if "There is no text in the message to edit" in str(e):
+                await query.message.reply_text(
+                    "✅ " + get_translation(language, 'payment_received'),
+                    reply_markup=reply_markup
+                )
+    
     async def handle_contacts(self, update: Update, context: ContextTypes.DEFAULT_TYPE):
         """Показать контакты"""
         query = update.callback_query
@@ -908,45 +892,98 @@ class FoodBot:
         user_id = query.from_user.id
         language = self.get_user_language(user_id)
         
-        contacts_text = {
-            'ru': """📞 <b>Контакты компании ФУД</b>
-
-📞 Телефон: +82 10-8361-6165
-🏠 Адрес: Ansan
-⏰ Время работы: 9:00 - 21:00
-
-🚚 <b>Доставка по всему городу!</b>""",
-            
-            'ko': """📞 <b>푸드 컴퍼니 연락처</b>
-
-📞 전화: +82 10-8361-6165
-🏠 주소: Ansan
-⏰ 영업 시간: 9:00 - 21:00
-
-🚚 <b>도시 전체 배달 가능!</b>"""
-        }
+        contacts_text = "📞 <b>Контакты</b>\n\n" if language == 'ru' else "📞 <b>연락처</b>\n\n"
+        contacts_text += "📍 Адрес: Сеул, район Каннам\n" if language == 'ru' else "📍 주소: 서울 강남구\n"
+        contacts_text += "📱 Телефон: +82-10-1234-5678\n" if language == 'ru' else "📱 전화: +82-10-1234-5678\n"
+        contacts_text += "🕒 Время работы: 10:00 - 22:00\n" if language == 'ru' else "🕒 영업시간: 10:00 - 22:00\n"
+        contacts_text += "📧 Email: info@foodcompany.kr" if language == 'ru' else "📧 이메일: info@foodcompany.kr"
         
         keyboard = [[InlineKeyboardButton(get_translation(language, 'back'), callback_data="back")]]
         reply_markup = InlineKeyboardMarkup(keyboard)
         
-        await query.edit_message_text(
-            contacts_text.get(language, contacts_text['ru']),
-            reply_markup=reply_markup,
-            parse_mode='HTML'
-        )
+        try:
+            await query.edit_message_text(
+                contacts_text,
+                reply_markup=reply_markup,
+                parse_mode='HTML'
+            )
+        except telegram.error.BadRequest as e:
+            if "There is no text in the message to edit" in str(e):
+                await query.message.reply_text(
+                    contacts_text,
+                    reply_markup=reply_markup,
+                    parse_mode='HTML'
+                )
     
     async def handle_back(self, update: Update, context: ContextTypes.DEFAULT_TYPE):
         """Назад в главное меню"""
         query = update.callback_query
         await query.answer()
         
+        await self.show_main_menu(query, self.get_user_language(query.from_user.id))
+
+    async def handle_start_command(self, update: Update, context: ContextTypes.DEFAULT_TYPE):
+        """Обработка кнопки перезапуска бота"""
+        query = update.callback_query
+        await query.answer()
+        
         user_id = query.from_user.id
+        user_name = query.from_user.first_name
         language = self.get_user_language(user_id)
-        await self.show_main_menu(query, language)
+        
+        # Персонализированное приветствие
+        welcome_text = f"👋 <b>Привет, {user_name}!</b>\n\n" if language == 'ru' else f"👋 <b>안녕하세요, {user_name}님!</b>\n\n"
+        welcome_text += get_translation(language, 'welcome_message')
+        
+        # Добавляем преимущества
+        welcome_text += f"\n\n{get_translation(language, 'features')}\n"
+        welcome_text += f"{get_translation(language, 'feature1')}\n"
+        welcome_text += f"{get_translation(language, 'feature2')}\n"
+        welcome_text += f"{get_translation(language, 'feature3')}\n"
+        welcome_text += f"{get_translation(language, 'feature4')}"
+        
+        keyboard = [
+            [InlineKeyboardButton("🇷🇺 Русский", callback_data="lang_ru"),
+             InlineKeyboardButton("🇰🇷 한국어", callback_data="lang_ko")]
+        ]
+        
+        reply_markup = InlineKeyboardMarkup(keyboard)
+        
+        await query.edit_message_text(
+            welcome_text,
+            reply_markup=reply_markup,
+            parse_mode='HTML'
+        )
     
+    async def handle_photo(self, update: Update, context: ContextTypes.DEFAULT_TYPE):
+        """Обработка скриншотов оплаты"""
+        user_id = update.effective_user.id
+        language = self.get_user_language(user_id)
+        
+        # Отправляем подтверждение получения скриншота
+        await update.message.reply_text(
+            "✅ " + get_translation(language, 'payment_received'),
+            reply_to_message_id=update.message.message_id
+        )
+        
+        # Показываем главное меню
+        keyboard = [
+            [InlineKeyboardButton("🍽️ " + get_translation(language, 'menu'), callback_data="menu")],
+            [InlineKeyboardButton("🛒 " + get_translation(language, 'cart'), callback_data="cart")]
+        ]
+        reply_markup = InlineKeyboardMarkup(keyboard)
+        
+        await update.message.reply_text(
+            get_translation(language, 'main_menu'),
+            reply_markup=reply_markup
+        )
+
     def setup_handlers(self, application):
         """Настройка обработчиков"""
+        # Команды
         application.add_handler(CommandHandler("start", self.start))
+        
+        # Обработчики callback-запросов
         application.add_handler(CallbackQueryHandler(self.handle_language, pattern="^lang_"))
         application.add_handler(CallbackQueryHandler(self.handle_menu, pattern="^menu$"))
         application.add_handler(CallbackQueryHandler(self.handle_category, pattern="^cat_"))
@@ -957,50 +994,34 @@ class FoodBot:
         application.add_handler(CallbackQueryHandler(self.handle_add_to_cart, pattern="^add_to_cart$"))
         application.add_handler(CallbackQueryHandler(self.handle_cart, pattern="^cart$"))
         application.add_handler(CallbackQueryHandler(self.handle_clear_cart, pattern="^clear_cart$"))
+        application.add_handler(CallbackQueryHandler(self.handle_checkout, pattern="^checkout$"))
+        application.add_handler(CallbackQueryHandler(self.handle_confirm_order, pattern="^confirm_order$"))
+        application.add_handler(CallbackQueryHandler(self.handle_payment_done, pattern="^payment_done$"))
         application.add_handler(CallbackQueryHandler(self.handle_contacts, pattern="^contacts$"))
         application.add_handler(CallbackQueryHandler(self.handle_back, pattern="^back$"))
-        application.add_handler(CallbackQueryHandler(self.handle_checkout, pattern="^checkout$"))
+        application.add_handler(CallbackQueryHandler(self.handle_start_command, pattern="^start_command$"))
         
-        # Обработчики сообщений
-        application.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, self.handle_checkout_input))
-        application.add_handler(MessageHandler(filters.PHOTO, self.handle_payment_screenshot))
+        # Обработчик фото (скриншоты оплаты)
+        application.add_handler(MessageHandler(filters.PHOTO, self.handle_photo))
 
 def main():
-    """Основная функция с webhook (рекомендуется для продакшена)"""
-    token = os.getenv('BOT_TOKEN')
-    if not token:
-        logging.error("❌ BOT_TOKEN не найден")
+    """Основная функция"""
+    # Получаем токен бота из переменных окружения
+    BOT_TOKEN = os.getenv('BOT_TOKEN')
+    if not BOT_TOKEN:
+        logging.error("❌ BOT_TOKEN не установлен!")
         return
     
-    try:
-        application = Application.builder().token(token).build()
-        
-        bot = FoodBot()
-        bot.setup_handlers(application)
-        
-        # Для Railway лучше использовать webhook
-        port = int(os.environ.get('PORT', 8080))
-        webhook_url = os.environ.get('RAILWAY_STATIC_URL')
-        
-        if webhook_url:
-            # Webhook режим для продакшена
-            logging.info("🌐 Запуск в режиме webhook...")
-            application.run_webhook(
-                listen="0.0.0.0",
-                port=port,
-                url_path=token,
-                webhook_url=f"{webhook_url}/{token}"
-            )
-        else:
-            # Polling режим для разработки
-            logging.info("🔄 Запуск в режиме polling...")
-            application.run_polling(
-                drop_pending_updates=True,
-                allowed_updates=Update.ALL_TYPES
-            )
-            
-    except Exception as e:
-        logging.error(f"❌ Ошибка запуска: {e}")
+    # Создаем приложение
+    application = Application.builder().token(BOT_TOKEN).build()
+    
+    # Создаем бота и настраиваем обработчики
+    bot = FoodBot()
+    bot.setup_handlers(application)
+    
+    # Запускаем бота
+    logging.info("🤖 Бот запущен...")
+    application.run_polling()
 
 if __name__ == "__main__":
     main()
