@@ -136,7 +136,7 @@ class FoodBot:
             {'id': 4, 'category_id': 1, 'name_ru': 'Мастава', 'name_ko': '마스타바', 'price': 8000, 'weight': '400г',
              'image_file': 'mastava.jpg'},
             {'id': 5, 'category_id': 1, 'name_ru': 'Харчо', 'name_ko': '카르초', 'price': 8000, 'weight': '350г',
-             'image_file': 'kharcho.jpg'},
+             'image_file': 'harcho.jpg'},
             {'id': 6, 'category_id': 1, 'name_ru': 'Основа для лагмана', 'name_ko': '라그먼의 기초', 'price': 8000, 'weight': '450г',
              'image_file': 'lagman.jpg'},
            
