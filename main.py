@@ -936,7 +936,6 @@ class FoodBot:
         application.add_handler(CallbackQueryHandler(self.handle_contacts, pattern="^contacts$"))
         application.add_handler(CallbackQueryHandler(self.handle_back, pattern="^back$"))
         application.add_handler(CallbackQueryHandler(self.handle_checkout, pattern="^checkout$"))
-        # Убрали обработчик handle_confirm_checkout, так как он не используется
         
         # Обработчики сообщений
         application.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, self.handle_checkout_input))
