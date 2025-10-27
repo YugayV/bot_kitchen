@@ -360,7 +360,7 @@ class FoodBot:
         )
     
     async def handle_dish(self, update: Update, context: ContextTypes.DEFAULT_TYPE):
-        """Показать информацию о блюде - СНАЧАЛА КАРТИНКА, ПОТОМ ВЫБОР КОЛИЧЕСТВА"""
+        """Показать информацию о блюде - УПРОЩЕННАЯ ВЕРСИЯ БЕЗ УДАЛЕНИЯ СООБЩЕНИЙ"""
         query = update.callback_query
         await query.answer()
         
@@ -387,7 +387,7 @@ class FoodBot:
         }
         context.user_data['quantity'] = 1  # Сбрасываем количество
         
-        # ШАГ 1: Отправляем картинку блюда (если есть)
+        # Пытаемся показать картинку, но не удаляем предыдущее сообщение
         image_path = self.get_image_path(dish.get('image_file'))
         
         if image_path:
@@ -405,7 +405,7 @@ class FoodBot:
                     caption += f"\n⚖️ {dish['weight']}"
                 caption += f"\n\n👇 Нажмите кнопку ниже чтобы выбрать количество"
                 
-                # Отправляем фото из файла
+                # Отправляем фото из файла как новое сообщение
                 with open(image_path, 'rb') as photo:
                     await query.message.reply_photo(
                         photo=photo,
@@ -413,19 +413,19 @@ class FoodBot:
                         reply_markup=reply_markup,
                         parse_mode='HTML'
                     )
-                await query.delete_message()
+                # НЕ УДАЛЯЕМ предыдущее сообщение!
                 return
                 
             except Exception as e:
                 logging.error(f"Ошибка загрузки изображения: {e}")
                 # Если картинка не загрузилась, переходим к выбору количества
-                await self.show_quantity_selection(update, context, dish, language)
-        else:
-            # Если нет картинки, сразу переходим к выбору количества
-            await self.show_quantity_selection(update, context, dish, language)
+                pass
+        
+        # Если нет картинки или произошла ошибка, показываем выбор количества
+        await self.show_quantity_selection(update, context, dish, language)
 
     async def show_quantity_selection(self, update: Update, context: ContextTypes.DEFAULT_TYPE, dish, language):
-        """Показать выбор количества (отдельное сообщение)"""
+        """Показать выбор количества"""
         query = update.callback_query
         user_id = query.from_user.id if query else update.effective_user.id
         
@@ -453,12 +453,20 @@ class FoodBot:
         reply_markup = InlineKeyboardMarkup(keyboard)
         
         if query:
-            # Если это callback query (из сообщения с фото), создаем новое сообщение
-            await query.message.reply_text(
-                quantity_text,
-                reply_markup=reply_markup,
-                parse_mode='HTML'
-            )
+            # Если есть query, редактируем сообщение
+            try:
+                await query.edit_message_text(
+                    quantity_text,
+                    reply_markup=reply_markup,
+                    parse_mode='HTML'
+                )
+            except telegram.error.BadRequest:
+                # Если не можем редактировать (сообщение с фото), создаем новое
+                await query.message.reply_text(
+                    quantity_text,
+                    reply_markup=reply_markup,
+                    parse_mode='HTML'
+                )
         else:
             await update.message.reply_text(
                 quantity_text,
@@ -547,13 +555,6 @@ class FoodBot:
             if "Message is not modified" in str(e):
                 # Игнорируем ошибку "сообщение не изменено"
                 pass
-            elif "no text in the message" in str(e):
-                # Если нет текста (сообщение с фото), создаем новое сообщение
-                await query.message.reply_text(
-                    dish_text,
-                    reply_markup=reply_markup,
-                    parse_mode='HTML'
-                )
             else:
                 logging.error(f"Ошибка обновления сообщения: {e}")
 
