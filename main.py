@@ -332,6 +332,9 @@ class FoodBot:
         language = self.get_user_language(user_id)
         category_id = int(query.data.split('_')[1])
         
+        # Сохраняем текущую категорию в context для кнопки "Назад"
+        context.user_data['current_category'] = category_id
+        
         category_dishes = [d for d in self.dishes if d['category_id'] == category_id]
         
         if not category_dishes:
@@ -360,7 +363,7 @@ class FoodBot:
         )
     
     async def handle_dish(self, update: Update, context: ContextTypes.DEFAULT_TYPE):
-        """Показать информацию о блюде - УПРОЩЕННАЯ ВЕРСИЯ БЕЗ УДАЛЕНИЯ СООБЩЕНИЙ"""
+        """Показать информацию о блюде"""
         query = update.callback_query
         await query.answer()
         
@@ -387,7 +390,10 @@ class FoodBot:
         }
         context.user_data['quantity'] = 1  # Сбрасываем количество
         
-        # Пытаемся показать картинку, но не удаляем предыдущее сообщение
+        # Получаем текущую категорию из context или из блюда
+        current_category = context.user_data.get('current_category', dish['category_id'])
+        
+        # Пытаемся показать картинку
         image_path = self.get_image_path(dish.get('image_file'))
         
         if image_path:
@@ -395,7 +401,7 @@ class FoodBot:
                 # Создаем клавиатуру для перехода к выбору количества
                 keyboard = [
                     [InlineKeyboardButton("🔢 " + get_translation(language, 'choose_quantity_btn'), callback_data="show_quantity")],
-                    [InlineKeyboardButton(get_translation(language, 'back'), callback_data=f"cat_{dish['category_id']}")]
+                    [InlineKeyboardButton(get_translation(language, 'back'), callback_data=f"cat_{current_category}")]
                 ]
                 reply_markup = InlineKeyboardMarkup(keyboard)
                 
@@ -413,7 +419,6 @@ class FoodBot:
                         reply_markup=reply_markup,
                         parse_mode='HTML'
                     )
-                # НЕ УДАЛЯЕМ предыдущее сообщение!
                 return
                 
             except Exception as e:
@@ -422,14 +427,18 @@ class FoodBot:
                 pass
         
         # Если нет картинки или произошла ошибка, показываем выбор количества
-        await self.show_quantity_selection(update, context, dish, language)
+        await self.show_quantity_selection(update, context, dish, language, current_category)
 
-    async def show_quantity_selection(self, update: Update, context: ContextTypes.DEFAULT_TYPE, dish, language):
+    async def show_quantity_selection(self, update: Update, context: ContextTypes.DEFAULT_TYPE, dish, language, category_id=None):
         """Показать выбор количества"""
         query = update.callback_query
         user_id = query.from_user.id if query else update.effective_user.id
         
         name = dish['name_ko'] if language == 'ko' else dish['name_ru']
+        
+        # Если category_id не передан, берем из context или из блюда
+        if category_id is None:
+            category_id = context.user_data.get('current_category', dish['category_id'])
         
         # Текст для выбора количества
         quantity_text = f"🍽️ <b>{name}</b>\n💰 {get_translation(language, 'price')} {dish['price']}won"
@@ -448,7 +457,7 @@ class FoodBot:
                 InlineKeyboardButton("🛒 " + get_translation(language, 'add_to_cart'), callback_data="add_to_cart"),
                 InlineKeyboardButton("📦 " + get_translation(language, 'go_to_cart'), callback_data="cart")
             ],
-            [InlineKeyboardButton(get_translation(language, 'back'), callback_data=f"cat_{dish['category_id']}")]
+            [InlineKeyboardButton(get_translation(language, 'back'), callback_data=f"cat_{category_id}")]
         ]
         reply_markup = InlineKeyboardMarkup(keyboard)
         
@@ -493,7 +502,10 @@ class FoodBot:
             await query.message.reply_text("❌ Ошибка: блюдо не найдено")
             return
         
-        await self.show_quantity_selection(update, context, dish, language)
+        # Получаем категорию из context
+        category_id = context.user_data.get('current_category', dish['category_id'])
+        
+        await self.show_quantity_selection(update, context, dish, language, category_id)
 
     async def handle_quantity(self, update: Update, context: ContextTypes.DEFAULT_TYPE):
         """Изменение количества"""
@@ -526,6 +538,9 @@ class FoodBot:
         
         name = dish_data['name_ko'] if language == 'ko' else dish_data['name_ru']
         
+        # Получаем категорию из context
+        category_id = context.user_data.get('current_category', dish_data['category_id'])
+        
         # Создаем клавиатуру с новым количеством
         keyboard = [
             [
@@ -537,7 +552,7 @@ class FoodBot:
                 InlineKeyboardButton("🛒 " + get_translation(language, 'add_to_cart'), callback_data="add_to_cart"),
                 InlineKeyboardButton("📦 " + get_translation(language, 'go_to_cart'), callback_data="cart")
             ],
-            [InlineKeyboardButton(get_translation(language, 'back'), callback_data=f"cat_{dish_data['category_id']}")]
+            [InlineKeyboardButton(get_translation(language, 'back'), callback_data=f"cat_{category_id}")]
         ]
         reply_markup = InlineKeyboardMarkup(keyboard)
         
