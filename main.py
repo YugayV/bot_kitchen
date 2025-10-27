@@ -1001,8 +1001,55 @@ class FoodBot:
         application.add_handler(CallbackQueryHandler(self.handle_back, pattern="^back$"))
         application.add_handler(CallbackQueryHandler(self.handle_start_command, pattern="^start_command$"))
         
+        # Обработчики для кнопок "Назад" из категорий
+        application.add_handler(CallbackQueryHandler(self.handle_category_back, pattern="^cat_"))
+        
         # Обработчик фото (скриншоты оплаты)
         application.add_handler(MessageHandler(filters.PHOTO, self.handle_photo))
+
+    async def handle_category_back(self, update: Update, context: ContextTypes.DEFAULT_TYPE):
+        """Обработка кнопки Назад из категории (возврат к списку блюд категории)"""
+        query = update.callback_query
+        await query.answer()
+        
+        user_id = query.from_user.id
+        language = self.get_user_language(user_id)
+        
+        # Получаем ID категории из callback_data
+        callback_data = query.data
+        if callback_data.startswith("cat_"):
+            category_id = int(callback_data.split("_")[1])
+            
+            # Сохраняем текущую категорию
+            context.user_data['current_category'] = category_id
+            
+            # Показываем блюда категории
+            category_dishes = [d for d in self.dishes if d['category_id'] == category_id]
+            
+            if not category_dishes:
+                keyboard = [[InlineKeyboardButton(get_translation(language, 'back'), callback_data="menu")]]
+                reply_markup = InlineKeyboardMarkup(keyboard)
+                await query.edit_message_text(
+                    get_translation(language, 'cart_empty'),
+                    reply_markup=reply_markup
+                )
+                return
+            
+            keyboard = []
+            for dish in category_dishes:
+                name = dish['name_ko'] if language == 'ko' else dish['name_ru']
+                button_text = f"{name} - {dish['price']}won"
+                if dish['weight']:
+                    button_text += f" ({dish['weight']})"
+                keyboard.append([InlineKeyboardButton(button_text, callback_data=f"dish_{dish['id']}")])
+            
+            keyboard.append([InlineKeyboardButton(get_translation(language, 'back'), callback_data="menu")])
+            reply_markup = InlineKeyboardMarkup(keyboard)
+            
+            await query.edit_message_text(
+                get_translation(language, 'choose_category'),
+                reply_markup=reply_markup
+            )
 
 def main():
     """Основная функция"""
