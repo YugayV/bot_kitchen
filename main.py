@@ -453,7 +453,8 @@ class FoodBot:
         reply_markup = InlineKeyboardMarkup(keyboard)
         
         if query:
-            await query.edit_message_text(
+            # Если это callback query (из сообщения с фото), создаем новое сообщение
+            await query.message.reply_text(
                 quantity_text,
                 reply_markup=reply_markup,
                 parse_mode='HTML'
@@ -475,13 +476,13 @@ class FoodBot:
         
         dish_data = context.user_data.get('selected_dish')
         if not dish_data:
-            await query.edit_message_text("❌ Ошибка: блюдо не найдено")
+            await query.message.reply_text("❌ Ошибка: блюдо не найдено")
             return
         
         # Находим полные данные блюда
         dish = next((d for d in self.dishes if d['id'] == dish_data['id']), None)
         if not dish:
-            await query.edit_message_text("❌ Ошибка: блюдо не найдено")
+            await query.message.reply_text("❌ Ошибка: блюдо не найдено")
             return
         
         await self.show_quantity_selection(update, context, dish, language)
@@ -546,6 +547,13 @@ class FoodBot:
             if "Message is not modified" in str(e):
                 # Игнорируем ошибку "сообщение не изменено"
                 pass
+            elif "no text in the message" in str(e):
+                # Если нет текста (сообщение с фото), создаем новое сообщение
+                await query.message.reply_text(
+                    dish_text,
+                    reply_markup=reply_markup,
+                    parse_mode='HTML'
+                )
             else:
                 logging.error(f"Ошибка обновления сообщения: {e}")
 
