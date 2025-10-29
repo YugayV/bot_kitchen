@@ -405,7 +405,7 @@ class FoodBot:
                 # Создаем клавиатуру для перехода к выбору количества
                 keyboard = [
                     [InlineKeyboardButton("🔢 " + get_translation(language, 'choose_quantity_btn'), callback_data="show_quantity")],
-                    [InlineKeyboardButton("🏠 " + get_translation(language, 'main_menu'), callback_data="back"),
+                    [InlineKeyboardButton("🏠 " + get_translation(language, 'main_menu'), callback_data="main_menu"),
                      InlineKeyboardButton("🛒 " + get_translation(language, 'cart'), callback_data="cart")]
                 ]
                 reply_markup = InlineKeyboardMarkup(keyboard)
@@ -463,7 +463,7 @@ class FoodBot:
                 InlineKeyboardButton("📦 " + get_translation(language, 'go_to_cart'), callback_data="cart")
             ],
             [
-                InlineKeyboardButton("🏠 " + get_translation(language, 'main_menu'), callback_data="back"),
+                InlineKeyboardButton("🏠 " + get_translation(language, 'main_menu'), callback_data="main_menu"),
                 InlineKeyboardButton("🍽️ " + get_translation(language, 'menu'), callback_data="menu")
             ]
         ]
@@ -572,7 +572,7 @@ class FoodBot:
                 InlineKeyboardButton("📦 " + get_translation(language, 'go_to_cart'), callback_data="cart")
             ],
             [
-                InlineKeyboardButton("🏠 " + get_translation(language, 'main_menu'), callback_data="back"),
+                InlineKeyboardButton("🏠 " + get_translation(language, 'main_menu'), callback_data="main_menu"),
                 InlineKeyboardButton("🍽️ " + get_translation(language, 'menu'), callback_data="menu")
             ]
         ]
@@ -652,7 +652,7 @@ class FoodBot:
         keyboard = [
             [InlineKeyboardButton("🛒 " + get_translation(language, 'cart'), callback_data="cart")],
             [InlineKeyboardButton("🍽️ " + get_translation(language, 'menu'), callback_data="menu")],
-            [InlineKeyboardButton("🏠 " + get_translation(language, 'main_menu'), callback_data="back")]
+            [InlineKeyboardButton("🏠 " + get_translation(language, 'main_menu'), callback_data="main_menu")]
         ]
         reply_markup = InlineKeyboardMarkup(keyboard)
         
@@ -686,7 +686,7 @@ class FoodBot:
         if not cart:
             keyboard = [
                 [InlineKeyboardButton("🍽️ " + get_translation(language, 'menu'), callback_data="menu")],
-                [InlineKeyboardButton("🏠 " + get_translation(language, 'main_menu'), callback_data="back")]
+                [InlineKeyboardButton("🏠 " + get_translation(language, 'main_menu'), callback_data="main_menu")]
             ]
             reply_markup = InlineKeyboardMarkup(keyboard)
             try:
@@ -717,7 +717,7 @@ class FoodBot:
             [InlineKeyboardButton("🗑️ " + get_translation(language, 'clear_cart'), callback_data="clear_cart")],
             [
                 InlineKeyboardButton("🍽️ " + get_translation(language, 'menu'), callback_data="menu"),
-                InlineKeyboardButton("🏠 " + get_translation(language, 'main_menu'), callback_data="back")
+                InlineKeyboardButton("🏠 " + get_translation(language, 'main_menu'), callback_data="main_menu")
             ]
         ]
         reply_markup = InlineKeyboardMarkup(keyboard)
@@ -748,7 +748,7 @@ class FoodBot:
         
         keyboard = [
             [InlineKeyboardButton("🍽️ " + get_translation(language, 'menu'), callback_data="menu")],
-            [InlineKeyboardButton("🏠 " + get_translation(language, 'main_menu'), callback_data="back")]
+            [InlineKeyboardButton("🏠 " + get_translation(language, 'main_menu'), callback_data="main_menu")]
         ]
         reply_markup = InlineKeyboardMarkup(keyboard)
         
@@ -776,7 +776,7 @@ class FoodBot:
         if not cart:
             keyboard = [
                 [InlineKeyboardButton("🍽️ " + get_translation(language, 'menu'), callback_data="menu")],
-                [InlineKeyboardButton("🏠 " + get_translation(language, 'main_menu'), callback_data="back")]
+                [InlineKeyboardButton("🏠 " + get_translation(language, 'main_menu'), callback_data="main_menu")]
             ]
             reply_markup = InlineKeyboardMarkup(keyboard)
             try:
@@ -808,7 +808,7 @@ class FoodBot:
             [InlineKeyboardButton("✅ " + get_translation(language, 'confirm_order'), callback_data="confirm_order")],
             [
                 InlineKeyboardButton("🛒 " + get_translation(language, 'back'), callback_data="cart"),
-                InlineKeyboardButton("🏠 " + get_translation(language, 'main_menu'), callback_data="back")
+                InlineKeyboardButton("🏠 " + get_translation(language, 'main_menu'), callback_data="main_menu")
             ]
         ]
         reply_markup = InlineKeyboardMarkup(keyboard)
@@ -839,7 +839,7 @@ class FoodBot:
         if not cart:
             keyboard = [
                 [InlineKeyboardButton("🍽️ " + get_translation(language, 'menu'), callback_data="menu")],
-                [InlineKeyboardButton("🏠 " + get_translation(language, 'main_menu'), callback_data="back")]
+                [InlineKeyboardButton("🏠 " + get_translation(language, 'main_menu'), callback_data="main_menu")]
             ]
             reply_markup = InlineKeyboardMarkup(keyboard)
             try:
@@ -868,7 +868,7 @@ class FoodBot:
             [InlineKeyboardButton("✅ " + get_translation(language, 'payment_received'), callback_data="payment_done")],
             [
                 InlineKeyboardButton("🛒 " + get_translation(language, 'cart'), callback_data="cart"),
-                InlineKeyboardButton("🏠 " + get_translation(language, 'main_menu'), callback_data="back")
+                InlineKeyboardButton("🏠 " + get_translation(language, 'main_menu'), callback_data="main_menu")
             ]
         ]
         reply_markup = InlineKeyboardMarkup(keyboard)
@@ -898,7 +898,7 @@ class FoodBot:
         # Очищаем корзину после оплаты
         self.set_user_cart(user_id, {})
         
-        keyboard = [[InlineKeyboardButton("🏠 " + get_translation(language, 'main_menu'), callback_data="back")]]
+        keyboard = [[InlineKeyboardButton("🏠 " + get_translation(language, 'main_menu'), callback_data="main_menu")]]
         reply_markup = InlineKeyboardMarkup(keyboard)
         
         try:
@@ -946,6 +946,13 @@ class FoodBot:
     
     async def handle_back(self, update: Update, context: ContextTypes.DEFAULT_TYPE):
         """Назад в главное меню"""
+        query = update.callback_query
+        await query.answer()
+        
+        await self.show_main_menu(query, self.get_user_language(query.from_user.id))
+
+    async def handle_main_menu(self, update: Update, context: ContextTypes.DEFAULT_TYPE):
+        """Обработка кнопки Главное меню"""
         query = update.callback_query
         await query.answer()
         
@@ -1028,10 +1035,58 @@ class FoodBot:
         application.add_handler(CallbackQueryHandler(self.handle_payment_done, pattern="^payment_done$"))
         application.add_handler(CallbackQueryHandler(self.handle_contacts, pattern="^contacts$"))
         application.add_handler(CallbackQueryHandler(self.handle_back, pattern="^back$"))
+        application.add_handler(CallbackQueryHandler(self.handle_main_menu, pattern="^main_menu$"))
         application.add_handler(CallbackQueryHandler(self.handle_start_command, pattern="^start_command$"))
+        
+        # Обработчики для кнопок "Назад" из категорий
+        application.add_handler(CallbackQueryHandler(self.handle_category_back, pattern="^cat_"))
         
         # Обработчик фото (скриншоты оплаты)
         application.add_handler(MessageHandler(filters.PHOTO, self.handle_photo))
+
+    async def handle_category_back(self, update: Update, context: ContextTypes.DEFAULT_TYPE):
+        """Обработка кнопки Назад из категории (возврат к списку блюд категории)"""
+        query = update.callback_query
+        await query.answer()
+        
+        user_id = query.from_user.id
+        language = self.get_user_language(user_id)
+        
+        # Получаем ID категории из callback_data
+        callback_data = query.data
+        if callback_data.startswith("cat_"):
+            category_id = int(callback_data.split("_")[1])
+            
+            # Сохраняем текущую категорию
+            context.user_data['current_category'] = category_id
+            
+            # Показываем блюда категории
+            category_dishes = [d for d in self.dishes if d['category_id'] == category_id]
+            
+            if not category_dishes:
+                keyboard = [[InlineKeyboardButton(get_translation(language, 'back'), callback_data="menu")]]
+                reply_markup = InlineKeyboardMarkup(keyboard)
+                await query.edit_message_text(
+                    get_translation(language, 'cart_empty'),
+                    reply_markup=reply_markup
+                )
+                return
+            
+            keyboard = []
+            for dish in category_dishes:
+                name = dish['name_ko'] if language == 'ko' else dish['name_ru']
+                button_text = f"{name} - {dish['price']}won"
+                if dish['weight']:
+                    button_text += f" ({dish['weight']})"
+                keyboard.append([InlineKeyboardButton(button_text, callback_data=f"dish_{dish['id']}")])
+            
+            keyboard.append([InlineKeyboardButton(get_translation(language, 'back'), callback_data="menu")])
+            reply_markup = InlineKeyboardMarkup(keyboard)
+            
+            await query.edit_message_text(
+                get_translation(language, 'choose_category'),
+                reply_markup=reply_markup
+            )
 
 def main():
     """Основная функция"""
