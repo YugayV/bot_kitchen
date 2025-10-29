@@ -405,7 +405,7 @@ class FoodBot:
                 # Создаем клавиатуру для перехода к выбору количества
                 keyboard = [
                     [InlineKeyboardButton("🔢 " + get_translation(language, 'choose_quantity_btn'), callback_data="show_quantity")],
-                    [InlineKeyboardButton("🏠 " + get_translation(language, 'main_menu'), callback_data="main_menu"),
+                    [InlineKeyboardButton("🏠 " + get_translation(language, 'main_menu'), callback_data="menu"),
                      InlineKeyboardButton("🛒 " + get_translation(language, 'cart'), callback_data="cart")]
                 ]
                 reply_markup = InlineKeyboardMarkup(keyboard)
