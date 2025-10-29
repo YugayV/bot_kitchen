@@ -405,7 +405,7 @@ class FoodBot:
                 # Создаем клавиатуру для перехода к выбору количества
                 keyboard = [
                     [InlineKeyboardButton("🔢 " + get_translation(language, 'choose_quantity_btn'), callback_data="show_quantity")],
-                    [InlineKeyboardButton("🏠 " + get_translation(language, 'main_menu'), callback_data="menu"),
+                    [InlineKeyboardButton("🏠 " + get_translation(language, 'main_menu'), callback_data="main_menu"),
                      InlineKeyboardButton("🛒 " + get_translation(language, 'cart'), callback_data="cart")]
                 ]
                 reply_markup = InlineKeyboardMarkup(keyboard)
@@ -421,9 +421,14 @@ class FoodBot:
                     await query.message.reply_photo(
                         photo=photo,
                         caption=caption,
-                        reply_markup=reply_markup,
                         parse_mode='HTML'
                     )
+                
+                # Отправляем отдельное сообщение с кнопками
+                await query.message.reply_text(
+                    "👇 Выберите действие:",
+                    reply_markup=reply_markup
+                )
                 return
                 
             except Exception as e:
