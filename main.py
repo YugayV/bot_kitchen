@@ -924,17 +924,22 @@ class FoodBot:
         order_summary += f"👤 ID пользователя: {user_id}"
         
         # Сохраняем информацию о заказе для администратора
-        order_id = f"order_{user_id}_{int(update.message.date.timestamp())}"
+        import time
+        order_id = f"order_{user_id}_{int(time.time())}"
         self.admin_orders[order_id] = {
             'user_id': user_id,
             'customer_name': customer_name,
             'customer_phone': customer_phone,
             'customer_address': customer_address,
-            'cart': cart,
+            'cart': cart.copy(),  # Сохраняем копию корзины
             'total': total,
             'language': language,
             'status': 'pending'
         }
+        
+        # Логируем создание заказа
+        logging.info(f"📦 Создан заказ {order_id} для пользователя {user_id}")
+        logging.info(f"📊 Всего заказов в системе: {len(self.admin_orders)}")
         
         # Клавиатура для администратора
         keyboard = [
@@ -952,8 +957,9 @@ class FoodBot:
                 text=order_summary,
                 reply_markup=reply_markup
             )
+            logging.info(f"✅ Заказ {order_id} отправлен администратору")
         except Exception as e:
-            logging.error(f"Ошибка отправки сообщения администратору: {e}")
+            logging.error(f"❌ Ошибка отправки сообщения администратору: {e}")
             await update.message.reply_text("❌ Ошибка отправки заказа. Пожалуйста, попробуйте позже.")
             return
         
@@ -974,9 +980,15 @@ class FoodBot:
         await query.answer()
         
         order_id = query.data.split('_')[2]
+        
+        # Логируем попытку найти заказ
+        logging.info(f"🔍 Поиск заказа {order_id}")
+        logging.info(f"📊 Доступные заказы: {list(self.admin_orders.keys())}")
+        
         order_data = self.admin_orders.get(order_id)
         
         if not order_data:
+            logging.error(f"❌ Заказ {order_id} не найден в admin_orders")
             await query.edit_message_text("❌ Заказ не найден")
             return
         
@@ -1010,8 +1022,9 @@ class FoodBot:
                 reply_markup=reply_markup,
                 parse_mode='HTML'
             )
+            logging.info(f"✅ Реквизиты отправлены пользователю {user_id} для заказа {order_id}")
         except Exception as e:
-            logging.error(f"Ошибка отправки сообщения клиенту: {e}")
+            logging.error(f"❌ Ошибка отправки сообщения клиенту {user_id}: {e}")
 
     async def handle_admin_reject(self, update: Update, context: ContextTypes.DEFAULT_TYPE):
         """Администратор отклоняет заказ"""
@@ -1019,9 +1032,14 @@ class FoodBot:
         await query.answer()
         
         order_id = query.data.split('_')[2]
+        
+        logging.info(f"🔍 Поиск заказа для отклонения: {order_id}")
+        logging.info(f"📊 Доступные заказы: {list(self.admin_orders.keys())}")
+        
         order_data = self.admin_orders.get(order_id)
         
         if not order_data:
+            logging.error(f"❌ Заказ {order_id} не найден для отклонения")
             await query.edit_message_text("❌ Заказ не найден")
             return
         
@@ -1048,8 +1066,9 @@ class FoodBot:
                 text=get_translation(language, 'order_rejected'),
                 reply_markup=reply_markup
             )
+            logging.info(f"✅ Уведомление об отклонении отправлено пользователю {user_id}")
         except Exception as e:
-            logging.error(f"Ошибка отправки сообщения клиенту: {e}")
+            logging.error(f"❌ Ошибка отправки сообщения клиенту {user_id}: {e}")
 
     async def handle_photo(self, update: Update, context: ContextTypes.DEFAULT_TYPE):
         """Обработка скриншотов оплаты - отправка администратору"""
@@ -1102,8 +1121,9 @@ class FoodBot:
                 photo=update.message.photo[-1].file_id,
                 reply_markup=reply_markup
             )
+            logging.info(f"✅ Скриншот оплаты отправлен администратору для заказа {user_order_id}")
         except Exception as e:
-            logging.error(f"Ошибка отправки фото администратору: {e}")
+            logging.error(f"❌ Ошибка отправки фото администратору: {e}")
             await update.message.reply_text("❌ Ошибка отправки скриншота. Пожалуйста, попробуйте позже.")
             return
         
@@ -1119,9 +1139,14 @@ class FoodBot:
         await query.answer()
         
         order_id = query.data.split('_')[3]
+        
+        logging.info(f"🔍 Поиск заказа для подтверждения оплаты: {order_id}")
+        logging.info(f"📊 Доступные заказы: {list(self.admin_orders.keys())}")
+        
         order_data = self.admin_orders.get(order_id)
         
         if not order_data:
+            logging.error(f"❌ Заказ {order_id} не найден для подтверждения оплаты")
             await query.edit_message_text("❌ Заказ не найден")
             return
         
@@ -1152,8 +1177,9 @@ class FoodBot:
                 text=get_translation(language, 'payment_confirmed'),
                 reply_markup=reply_markup
             )
+            logging.info(f"✅ Подтверждение оплаты отправлено пользователю {user_id}")
         except Exception as e:
-            logging.error(f"Ошибка отправки сообщения клиенту: {e}")
+            logging.error(f"❌ Ошибка отправки сообщения клиенту {user_id}: {e}")
 
     async def handle_contacts(self, update: Update, context: ContextTypes.DEFAULT_TYPE):
         """Показать контакты"""
