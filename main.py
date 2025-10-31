@@ -985,54 +985,6 @@ class FoodBot:
         query = update.callback_query
         await query.answer()
         
-        if len(query.data.split('_')) < 3:
-            await query.edit_message_text("❌ Неверный формат запроса")
-            return
-            
-        order_id = query.data.split('_')[2]
-        
-        logging.info(f"🔍 Поиск заказа {order_id}")
-        logging.info(f"📊 Доступные заказы: {list(self.admin_orders.keys())}")
-        
-        order_data = self.admin_orders.get(order_id)
-        
-        if not order_data:
-            await query.edit_message_text(f"❌ Заказ {order_id} не найден")
-            return
-        
-        # Обновляем статус заказа
-        order_data['status'] = 'confirmed'
-        
-        # Уведомляем администратора
-        await query.edit_message_text(
-            get_translation('ru', 'admin_order_confirmed') + f"\n\nID заказа: {order_id}"
-        )
-        
-        # Отправляем реквизиты для оплаты клиенту
-        user_id = order_data['user_id']
-        language = order_data['language']
-        total = order_data['total']
-        
-        payment_message = get_translation(language, 'payment_details')
-        payment_message += get_translation(language, 'bank_details')
-        payment_message += f"💵 {get_translation(language, 'payment_amount')} <b>{total}won</b>\n\n"
-        payment_message += get_translation(language, 'send_screenshot')
-        
-        try:
-            await context.bot.send_message(
-                chat_id=user_id,
-                text=payment_message,
-                parse_mode='HTML'
-            )
-            logging.info(f"✅ Реквизиты отправлены пользователю {user_id}")
-        except Exception as e:
-            logging.error(f"❌ Ошибка отправки реквизитов пользователю {user_id}: {e}")
-
-    async def handle_admin_confirm(self, update: Update, context: ContextTypes.DEFAULT_TYPE):
-        """Администратор подтверждает заказ"""
-        query = update.callback_query
-        await query.answer()
-        
         # Получаем полный callback_data
         callback_data = query.data
         logging.info(f"🔍 Получен callback_data: {callback_data}")
@@ -1136,6 +1088,61 @@ class FoodBot:
             logging.info(f"✅ Уведомление об отклонении отправлено пользователю {user_id}")
         except Exception as e:
             logging.error(f"❌ Ошибка отправки уведомления пользователю {user_id}: {e}")
+
+    async def handle_photo(self, update: Update, context: ContextTypes.DEFAULT_TYPE):
+        """Обработка скриншотов оплаты"""
+        user_id = update.effective_user.id
+        language = self.get_user_language(user_id)
+        
+        # Ищем подтвержденный заказ пользователя
+        user_order_id = None
+        for order_id, order_data in self.admin_orders.items():
+            if order_data['user_id'] == user_id and order_data['status'] == 'confirmed':
+                user_order_id = order_id
+                break
+        
+        if not user_order_id:
+            await update.message.reply_text(
+                "❌ У вас нет подтвержденных заказов для оплаты.",
+                reply_to_message_id=update.message.message_id
+            )
+            return
+        
+        order_data = self.admin_orders[user_order_id]
+        
+        # Обновляем статус заказа
+        order_data['status'] = 'payment_sent'
+        
+        # Отправляем скриншот администратору
+        admin_message = get_translation('ru', 'admin_payment_received')
+        admin_message += f"ID заказа: {user_order_id}\n"
+        admin_message += f"👤 Клиент: {order_data['customer_name']}\n"
+        admin_message += f"📞 Телефон: {order_data['customer_phone']}\n"
+        admin_message += f"💰 Сумма: {order_data['total']}won"
+        
+        # Клавиатура для администратора
+        keyboard = [
+            [InlineKeyboardButton(get_translation('ru', 'admin_confirm_payment'), 
+                                callback_data=f"admin_confirm_payment_{user_order_id}")]
+        ]
+        reply_markup = InlineKeyboardMarkup(keyboard)
+        
+        try:
+            # Отправляем сообщение и фото администратору
+            await context.bot.send_message(ADMIN_ID, admin_message)
+            await context.bot.send_photo(
+                chat_id=ADMIN_ID,
+                photo=update.message.photo[-1].file_id,
+                caption=f"Скриншот оплаты для заказа {user_order_id}",
+                reply_markup=reply_markup
+            )
+            logging.info(f"✅ Скриншот отправлен администратору для заказа {user_order_id}")
+        except Exception as e:
+            logging.error(f"❌ Ошибка отправки скриншота: {e}")
+            await update.message.reply_text("❌ Ошибка отправки скриншота.")
+            return
+        
+        await update.message.reply_text(get_translation(language, 'waiting_for_payment_confirmation'))
 
     async def handle_admin_confirm_payment(self, update: Update, context: ContextTypes.DEFAULT_TYPE):
         """Администратор подтверждает оплату"""
