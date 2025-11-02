@@ -11,8 +11,9 @@ logging.basicConfig(
     level=logging.INFO
 )
 
-# ID администратора (замените на ваш Telegram ID)
-ADMIN_ID = 379494671  # Замените на реальный ID администратора
+# ID администратора и группы (замените на реальные ID)
+ADMIN_ID = 123456789  # Личный ID администратора
+GROUP_ID = -1001234567890  # ID группы для заказов
 
 # Переводы
 TRANSLATIONS = {
@@ -69,7 +70,9 @@ TRANSLATIONS = {
         'enter_phone': "📞 Теперь введите ваш номер телефона:",
         'enter_address': "🏠 Введите адрес доставки:",
         'order_sent_to_admin': "📨 Ваш заказ отправлен администратору. Ожидайте подтверждения.",
-        'order_confirmed_by_admin': "✅ Ваш заказ подтвержден! Теперь вы можете произвести оплату.",
+        'order_confirmed_by_admin': "✅ Ваш заказ подтвержден администратором! Теперь вы можете произвести оплату.",
+        'order_ready_for_payment': "💳 Теперь вы можете произвести оплату по следующим реквизитам:\n\n",
+        'order_preparing': "👨‍🍳 Ваш заказ принят в работу и готовится! Ожидайте доставки в течение 30-45 минут.",
         'waiting_for_admin': "⏳ Ожидание подтверждения заказа администратором...",
         'admin_new_order': "🆕 НОВЫЙ ЗАКАЗ!\n\n",
         'admin_order_details': "Детали заказа:\n",
@@ -80,11 +83,15 @@ TRANSLATIONS = {
         'admin_order_rejected': "❌ Заказ отклонен.",
         'admin_payment_received': "💳 ПОСТУПИЛА ОПЛАТА!\n\n",
         'admin_confirm_payment': "✅ Подтвердить получение оплаты",
-        'admin_payment_confirmed': "✅ Оплата подтверждена. Клиент уведомлен.",
+        'admin_payment_confirmed': "✅ Оплата подтверждена. Клиент уведомлен, что заказ готовится.",
         'order_rejected': "❌ К сожалению, ваш заказ был отклонен администратором. Пожалуйста, свяжитесь с нами для уточнения деталей.",
         'waiting_for_payment_confirmation': "⏳ Ожидание подтверждения оплаты администратором...",
         'payment_confirmed': "✅ Ваша оплата подтверждена! Ваш заказ принят. Пожалуйста, ожидайте звонка от нашего сотрудника.",
-        'continue_shopping': "🛍️ Продолжить покупки"
+        'continue_shopping': "🛍️ Продолжить покупки",
+        'send_payment_screenshot': "📸 После оплаты отправьте скриншот чека для подтверждения",
+        'group_order_confirmed': "✅ ЗАКАЗ ПОДТВЕРЖДЕН\n\n",
+        'group_payment_received': "💳 ОПЛАТА ПОЛУЧЕНА\n\n",
+        'group_order_preparing': "👨‍🍳 ЗАКАЗ В РАБОТЕ\n\n"
     },
     'ko': {
         'welcome': "🍖 푸드 컴퍼니에 오신 것을 환영합니다!",
@@ -139,7 +146,9 @@ TRANSLATIONS = {
         'enter_phone': "📞 전화번호를 입력해 주세요:",
         'enter_address': "🏠 배달 주소를 입력해 주세요:",
         'order_sent_to_admin': "📨 주문이 관리자에게 전송되었습니다. 확인을 기다려 주세요.",
-        'order_confirmed_by_admin': "✅ 주문이 확인되었습니다! 이제 결제를 진행할 수 있습니다.",
+        'order_confirmed_by_admin': "✅ 주문이 관리자에 의해 확인되었습니다! 이제 결제를 진행할 수 있습니다.",
+        'order_ready_for_payment': "💳 이제 다음 정보로 결제를 진행할 수 있습니다:\n\n",
+        'order_preparing': "👨‍🍳 주문이 접수되어 준비 중입니다! 30-45분 내로 배달을 기다려 주세요.",
         'waiting_for_admin': "⏳ 관리자의 주문 확인을 기다리는 중...",
         'admin_new_order': "🆕 새 주문!\n\n",
         'admin_order_details': "주문 세부 정보:\n",
@@ -150,11 +159,15 @@ TRANSLATIONS = {
         'admin_order_rejected': "❌ 주문이 거절되었습니다.",
         'admin_payment_received': "💳 결제 접수!\n\n",
         'admin_confirm_payment': "✅ 결제 확인",
-        'admin_payment_confirmed': "✅ 결제가 확인되었습니다. 고객에게 알림이 전송되었습니다.",
+        'admin_payment_confirmed': "✅ 결제가 확인되었습니다. 고객에게 주문 준비 중임을 알렸습니다.",
         'order_rejected': "❌ 죄송합니다. 관리자에 의해 주문이 거절되었습니다. 자세한 내용은 문의해 주세요.",
         'waiting_for_payment_confirmation': "⏳ 관리자의 결제 확인을 기다리는 중...",
         'payment_confirmed': "✅ 결제가 확인되었습니다! 주문이 접수되었습니다. 직원의 연락을 기다려 주세요.",
-        'continue_shopping': "🛍️ 쇼핑 계속하기"
+        'continue_shopping': "🛍️ 쇼핑 계속하기",
+        'send_payment_screenshot': "📸 결제 후 확인을 위해 스크린샷을 보내주세요",
+        'group_order_confirmed': "✅ 주문 확인됨\n\n",
+        'group_payment_received': "💳 결제 접수됨\n\n",
+        'group_order_preparing': "👨‍🍳 주문 준비 중\n\n"
     }
 }
 
@@ -981,7 +994,7 @@ class FoodBot:
         await update.message.reply_text(get_translation(language, 'order_sent_to_admin'))
 
     async def handle_admin_confirm(self, update: Update, context: ContextTypes.DEFAULT_TYPE):
-        """Администратор подтверждает заказ"""
+        """Администратор подтверждает заказ - отправляет реквизиты клиенту"""
         query = update.callback_query
         await query.answer()
         
@@ -1002,7 +1015,6 @@ class FoodBot:
             return
         
         logging.info(f"🔍 Поиск заказа {order_id}")
-        logging.info(f"📊 Доступные заказы: {list(self.admin_orders.keys())}")
         
         order_data = self.admin_orders.get(order_id)
         
@@ -1018,25 +1030,55 @@ class FoodBot:
             get_translation('ru', 'admin_order_confirmed') + f"\n\nID заказа: {order_id}"
         )
         
+        # Отправляем уведомление в группу
+        try:
+            group_message = get_translation('ru', 'group_order_confirmed')
+            group_message += f"📋 Заказ #{order_id}\n"
+            group_message += f"👤 Клиент: {order_data['customer_name']}\n"
+            group_message += f"💰 Сумма: {order_data['total']}won\n"
+            group_message += f"✅ Подтвердил: {query.from_user.first_name}\n"
+            group_message += f"⏰ Время: {time.strftime('%H:%M:%S')}"
+            
+            await context.bot.send_message(
+                chat_id=GROUP_ID,
+                text=group_message
+            )
+            logging.info(f"✅ Подтверждение заказа {order_id} отправлено в группу")
+        except Exception as e:
+            logging.error(f"❌ Ошибка отправки подтверждения в группу: {e}")
+        
         # Отправляем реквизиты для оплаты клиенту
         user_id = order_data['user_id']
         language = order_data['language']
         total = order_data['total']
         
-        payment_message = get_translation(language, 'payment_details')
+        # Сообщение клиенту о подтверждении заказа
+        confirmation_message = get_translation(language, 'order_confirmed_by_admin')
+        confirmation_message += f"\n\n💰 {get_translation(language, 'total')}: {total}won"
+        confirmation_message += f"\n\n{get_translation(language, 'send_payment_screenshot')}"
+        
+        # Реквизиты для оплаты
+        payment_message = get_translation(language, 'order_ready_for_payment')
         payment_message += get_translation(language, 'bank_details')
-        payment_message += f"💵 {get_translation(language, 'payment_amount')} <b>{total}won</b>\n\n"
-        payment_message += get_translation(language, 'send_screenshot')
+        payment_message += f"💵 {get_translation(language, 'payment_amount')} <b>{total}won</b>"
         
         try:
+            # Сначала отправляем подтверждение заказа
+            await context.bot.send_message(
+                chat_id=user_id,
+                text=confirmation_message
+            )
+            
+            # Затем отправляем реквизиты
             await context.bot.send_message(
                 chat_id=user_id,
                 text=payment_message,
                 parse_mode='HTML'
             )
-            logging.info(f"✅ Реквизиты отправлены пользователю {user_id}")
+            
+            logging.info(f"✅ Подтверждение заказа и реквизиты отправлены пользователю {user_id}")
         except Exception as e:
-            logging.error(f"❌ Ошибка отправки реквизитов пользователю {user_id}: {e}")
+            logging.error(f"❌ Ошибка отправки сообщений пользователю {user_id}: {e}")
 
     async def handle_admin_reject(self, update: Update, context: ContextTypes.DEFAULT_TYPE):
         """Администратор отклоняет заказ"""
@@ -1094,7 +1136,7 @@ class FoodBot:
         user_id = update.effective_user.id
         language = self.get_user_language(user_id)
         
-        # Ищем подтвержденный заказ пользователя
+        # Ищем подтвержденный заказ пользователя (статус 'confirmed')
         user_order_id = None
         for order_id, order_data in self.admin_orders.items():
             if order_data['user_id'] == user_id and order_data['status'] == 'confirmed':
@@ -1103,7 +1145,7 @@ class FoodBot:
         
         if not user_order_id:
             await update.message.reply_text(
-                "❌ У вас нет подтвержденных заказов для оплаты.",
+                "❌ У вас нет подтвержденных заказов для оплаты. Дождитесь подтверждения заказа администратором.",
                 reply_to_message_id=update.message.message_id
             )
             return
@@ -1136,16 +1178,33 @@ class FoodBot:
                 caption=f"Скриншот оплаты для заказа {user_order_id}",
                 reply_markup=reply_markup
             )
-            logging.info(f"✅ Скриншот отправлен администратору для заказа {user_order_id}")
+            
+            # Отправляем уведомление в группу
+            group_message = get_translation('ru', 'group_payment_received')
+            group_message += f"📋 Заказ #{user_order_id}\n"
+            group_message += f"👤 Клиент: {order_data['customer_name']}\n"
+            group_message += f"💰 Сумма: {order_data['total']}won\n"
+            group_message += f"⏰ Время: {time.strftime('%H:%M:%S')}"
+            
+            await context.bot.send_message(
+                chat_id=GROUP_ID,
+                text=group_message
+            )
+            
+            logging.info(f"✅ Скриншот отправлен администратору и в группу для заказа {user_order_id}")
         except Exception as e:
             logging.error(f"❌ Ошибка отправки скриншота: {e}")
             await update.message.reply_text("❌ Ошибка отправки скриншота.")
             return
         
-        await update.message.reply_text(get_translation(language, 'waiting_for_payment_confirmation'))
+        # Уведомляем клиента, что скриншот получен и ожидается подтверждение
+        await update.message.reply_text(
+            get_translation(language, 'waiting_for_payment_confirmation'),
+            reply_to_message_id=update.message.message_id
+        )
 
     async def handle_admin_confirm_payment(self, update: Update, context: ContextTypes.DEFAULT_TYPE):
-        """Администратор подтверждает оплату"""
+        """Администратор подтверждает оплату - уведомляет клиента, что заказ готовится"""
         query = update.callback_query
         await query.answer()
         
@@ -1165,9 +1224,6 @@ class FoodBot:
             await query.edit_message_text("❌ ID заказа не найден")
             return
         
-        logging.info(f"🔍 Поиск заказа для подтверждения оплаты: {order_id}")
-        logging.info(f"📊 Доступные заказы: {list(self.admin_orders.keys())}")
-        
         order_data = self.admin_orders.get(order_id)
         
         if not order_data:
@@ -1182,7 +1238,27 @@ class FoodBot:
             get_translation('ru', 'admin_payment_confirmed') + f"\n\nID заказа: {order_id}"
         )
         
-        # Уведомляем клиента и очищаем корзину
+        # Отправляем уведомление в группу
+        try:
+            group_message = get_translation('ru', 'group_order_preparing')
+            group_message += f"📋 Заказ #{order_id}\n"
+            group_message += f"👤 Клиент: {order_data['customer_name']}\n"
+            group_message += f"📞 Телефон: {order_data['customer_phone']}\n"
+            group_message += f"🏠 Адрес: {order_data['customer_address']}\n"
+            group_message += f"💰 Сумма: {order_data['total']}won\n"
+            group_message += f"✅ Оплату подтвердил: {query.from_user.first_name}\n"
+            group_message += f"⏰ Время: {time.strftime('%H:%M:%S')}"
+            group_message += f"\n\n🎉 ЗАКАЗ ПЕРЕДАН НА ВЫПОЛНЕНИЕ!"
+            
+            await context.bot.send_message(
+                chat_id=GROUP_ID,
+                text=group_message
+            )
+            logging.info(f"✅ Подтверждение оплаты {order_id} отправлено в группу")
+        except Exception as e:
+            logging.error(f"❌ Ошибка отправки подтверждения оплаты в группу: {e}")
+        
+        # Уведомляем клиента, что заказ готовится и очищаем корзину
         user_id = order_data['user_id']
         language = order_data['language']
         
@@ -1191,11 +1267,11 @@ class FoodBot:
         try:
             await context.bot.send_message(
                 chat_id=user_id,
-                text=get_translation(language, 'payment_confirmed')
+                text=get_translation(language, 'order_preparing')
             )
-            logging.info(f"✅ Подтверждение оплаты отправлено пользователю {user_id}")
+            logging.info(f"✅ Уведомление о подготовке заказа отправлено пользователю {user_id}")
         except Exception as e:
-            logging.error(f"❌ Ошибка отправки подтверждения пользователю {user_id}: {e}")
+            logging.error(f"❌ Ошибка отправки уведомления пользователю {user_id}: {e}")
 
     async def handle_contacts(self, update: Update, context: ContextTypes.DEFAULT_TYPE):
         """Показать контакты"""
