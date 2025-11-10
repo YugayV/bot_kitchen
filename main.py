@@ -23,7 +23,7 @@ TRANSLATIONS = {
         'welcome_message': """🌟 <b>Добро пожаловать в Home_Food-бот!</b> 🌟
 
 🍽️ Благодарим Вас за то что заинтересовались нашей продукцией!
-Сделайте заказ прямо сейчас и посветите секономленное время себе и семье!  
+Сделайте заказ прямо сейчас и посветите секономленное время себе и семье! 
 
 Здесь вы можете:
 • 📋 Просмотреть наше разнообразное меню
@@ -53,7 +53,7 @@ TRANSLATIONS = {
         'go_to_cart': "🛒 Перейти в корзину",
         'checkout_name': "📝 Введите ваше имя:",
         'checkout_phone': "📞 Введите ваш телефон:",
-        'checkout_address': "🏠 Введите адрес доставки:",
+        'checkout_address': "🏠 Отправьте фото с адресом доставки:\n\n(Сфотографируйте бумажку с адресом или отправьте скриншот карты)",
         'payment_details': "💳 Реквизиты для оплаты:\n\n",
         'payment_amount': "Сумма к оплате:",
         'bank_details': "🏦 Банковские реквизиты:\n전북은행 (JEONBUK BANK)\n계좌번호: 9100053711589\n예금주: 01080281960\n\n",
@@ -69,7 +69,7 @@ TRANSLATIONS = {
         'start_command': "🔄 Перезапустить бота",
         'enter_name': "📝 Пожалуйста, введите ваше имя:",
         'enter_phone': "📞 Теперь введите ваш номер телефона:",
-        'enter_address': "🏠 Введите адрес доставки:",
+        'enter_address': "🏠 Отправьте фото с адресом доставки:\n\n📸 <b>Сфотографируйте бумажку с адресом или отправьте скриншот карты</b>",
         'order_sent_to_admin': "✅ Заказ оформлен! Теперь произведите оплату по указанным реквизитам и отправьте скриншот чека.",
         'order_ready_for_payment': "💳 Произведите оплату по следующим реквизитам:\n\n",
         'order_preparing': "👨‍🍳 Ваш заказ принят в работу и готовится! Ожидайте доставки в течение 30-45 минут.",
@@ -91,7 +91,10 @@ TRANSLATIONS = {
         'invalid_phone': "❌ Неверный формат телефона. Пожалуйста, введите номер в формате: +821012345678 или 01012345678",
         'invalid_name': "❌ Имя должно содержать только буквы и быть от 2 до 50 символов",
         'order_already_confirmed': "✅ Этот заказ уже подтвержден ранее",
-        'order_already_rejected': "❌ Этот заказ уже отклонен ранее"
+        'order_already_rejected': "❌ Этот заказ уже отклонен ранее",
+        'address_photo_received': "✅ Фото с адресом получено! Теперь отправьте скриншот оплаты.",
+        'waiting_address_photo': "📸 Ожидание фото с адресом...",
+        'please_send_address_photo': "❌ Пожалуйста, отправьте фото с адресом доставки"
     },
     'ko': {
         'welcome': "🍖 푸드 컴퍼니에 오신 것을 환영합니다!",
@@ -127,7 +130,7 @@ TRANSLATIONS = {
         'go_to_cart': "🛒 장바구니로 이동",
         'checkout_name': "📝 이름을 입력하세요:",
         'checkout_phone': "📞 전화번호를 입력하세요:",
-        'checkout_address': "🏠 배달 주소를 입력하세요:",
+        'checkout_address': "🏠 배달 주소 사진을 보내주세요:\n\n(주소가 적힌 종이를 사진 찍어 보내주세요 또는 지도 스크린샷)",
         'payment_details': "💳 결제 정보:\n\n",
         'payment_amount': "결제 금액:",
         'bank_details': "🏦 은행 정보:\n전북은행 (JEONBUK BANK)\n계좌번호: 9100053711589\n예금주: 01080281960\n\n",
@@ -143,7 +146,7 @@ TRANSLATIONS = {
         'start_command': "🔄 봇 다시 시작",
         'enter_name': "📝 이름을 입력해 주세요:",
         'enter_phone': "📞 전화번호를 입력해 주세요:",
-        'enter_address': "🏠 배달 주소를 입력해 주세요:",
+        'enter_address': "🏠 배달 주소 사진을 보내주세요:\n\n📸 <b>주소가 적힌 종이를 사진 찍어 보내주세요 또는 지도 스크린샷</b>",
         'order_sent_to_admin': "✅ 주문이 완료되었습니다! 아래 정보로 결제를 진행하고 스크린샷을 보내주세요.",
         'order_ready_for_payment': "💳 다음 정보로 결제를 진행하세요:\n\n",
         'order_preparing': "👨‍🍳 주문이 접수되어 준비 중입니다! 30-45분 내로 배달을 기다려 주세요.",
@@ -165,7 +168,10 @@ TRANSLATIONS = {
         'invalid_phone': "❌ 전화번호 형식이 잘못되었습니다. +821012345678 또는 01012345678 형식으로 입력해 주세요",
         'invalid_name': "❌ 이름은 2~50자의 문자만 포함해야 합니다",
         'order_already_confirmed': "✅ 이 주문은 이미 확인되었습니다",
-        'order_already_rejected': "❌ 이 주문은 이미 거절되었습니다"
+        'order_already_rejected': "❌ 이 주문은 이미 거절되었습니다",
+        'address_photo_received': "✅ 주소 사진을 받았습니다! 이제 결제 스크린샷을 보내주세요.",
+        'waiting_address_photo': "📸 주소 사진을 기다리는 중...",
+        'please_send_address_photo': "❌ 배달 주소 사진을 보내주세요"
     }
 }
 
@@ -851,26 +857,48 @@ class FoodBot:
                 
             context.user_data['customer_phone'] = text
             context.user_data['checkout_step'] = 'address'
-            await update.message.reply_text(get_translation(language, 'enter_address'))
-            
-        elif checkout_step == 'address':
-            if not text:
-                await update.message.reply_text("❌ Адрес не может быть пустым. Пожалуйста, введите адрес доставки:")
-                return
-                
-            context.user_data['customer_address'] = text
-            context.user_data['checkout_step'] = None
-            await self.send_payment_details(update, context, user_id, language)
+            await update.message.reply_text(
+                get_translation(language, 'enter_address'),
+                parse_mode='HTML'
+            )
+
+    async def handle_address_photo(self, update: Update, context: ContextTypes.DEFAULT_TYPE):
+        """Обработка фото с адресом"""
+        user_id = update.effective_user.id
+        language = self.get_user_language(user_id)
+        
+        # Проверяем, находится ли пользователь на этапе ввода адреса
+        checkout_step = context.user_data.get('checkout_step')
+        if checkout_step != 'address':
+            return
+        
+        # Сохраняем file_id фото адреса
+        context.user_data['address_photo_id'] = update.message.photo[-1].file_id
+        context.user_data['checkout_step'] = None
+        
+        # Уведомляем пользователя
+        await update.message.reply_text(
+            get_translation(language, 'address_photo_received'),
+            reply_to_message_id=update.message.message_id
+        )
+        
+        # Переходим к отправке реквизитов
+        await self.send_payment_details(update, context, user_id, language)
 
     async def send_payment_details(self, update: Update, context: ContextTypes.DEFAULT_TYPE, user_id: int, language: str):
         """Отправка реквизитов для оплаты"""
         cart = context.user_data.get('order_cart', {})
         customer_name = context.user_data.get('customer_name', '')
         customer_phone = context.user_data.get('customer_phone', '')
-        customer_address = context.user_data.get('customer_address', '')
+        address_photo_id = context.user_data.get('address_photo_id')
         
         if not cart:
             await update.message.reply_text("❌ Ошибка: корзина пуста")
+            return
+        
+        if not address_photo_id:
+            await update.message.reply_text(get_translation(language, 'please_send_address_photo'))
+            context.user_data['checkout_step'] = 'address'
             return
         
         total = 0
@@ -885,7 +913,7 @@ class FoodBot:
         logging.info(f"📦 СОЗДАНИЕ ЗАКАЗА {order_id}:")
         logging.info(f"   👤 User ID: {user_id}")
         logging.info(f"   📞 Телефон: {customer_phone}")
-        logging.info(f"   🏠 Адрес: {customer_address}")
+        logging.info(f"   🏠 Адрес: фото отправлено")
         logging.info(f"   🛒 Товаров: {len(cart)}")
         logging.info(f"   💰 Сумма: {total}")
         
@@ -893,7 +921,7 @@ class FoodBot:
             'user_id': user_id,
             'customer_name': customer_name,
             'customer_phone': customer_phone,
-            'customer_address': customer_address,
+            'address_photo_id': address_photo_id,
             'cart': cart.copy(),
             'total': total,
             'language': language,
@@ -929,7 +957,7 @@ class FoodBot:
             logging.error(f"❌ Ошибка отправки реквизитов пользователю {user_id}: {e}")
             await update.message.reply_text("❌ Ошибка оформления заказа. Пожалуйста, попробуйте позже.")
 
-    async def handle_photo(self, update: Update, context: ContextTypes.DEFAULT_TYPE):
+    async def handle_payment_photo(self, update: Update, context: ContextTypes.DEFAULT_TYPE):
         """Обработка скриншотов оплаты"""
         user_id = update.effective_user.id
         language = self.get_user_language(user_id)
@@ -961,12 +989,12 @@ class FoodBot:
         order_data['status'] = 'payment_sent'
         order_data['payment_status'] = 'waiting_confirmation'
         order_data['screenshot_sent_at'] = time.time()
+        order_data['payment_photo_id'] = update.message.photo[-1].file_id
         
         group_message = "🆕 <b>НОВЫЙ ЗАКАЗ - ОЖИДАЕТ ПОДТВЕРЖДЕНИЯ</b>\n\n"
         group_message += "👤 <b>Информация о клиенте:</b>\n"
         group_message += f"   • Имя: {order_data['customer_name']}\n"
         group_message += f"   • Телефон: {order_data['customer_phone']}\n"
-        group_message += f"   • Адрес: {order_data['customer_address']}\n"
         group_message += f"   • Язык: {'Русский' if order_data['language'] == 'ru' else 'Корейский'}\n\n"
         
         group_message += "📋 <b>Детали заказа:</b>\n"
@@ -996,6 +1024,7 @@ class FoodBot:
         admin_reply_markup = InlineKeyboardMarkup(admin_keyboard)
         
         try:
+            # Отправляем текстовое сообщение в группу
             admin_message = await context.bot.send_message(
                 chat_id=GROUP_ID,
                 text=group_message,
@@ -1003,10 +1032,19 @@ class FoodBot:
                 parse_mode='HTML'
             )
             
+            # Отправляем фото адреса в группу
             await context.bot.send_photo(
                 chat_id=GROUP_ID,
-                photo=update.message.photo[-1].file_id,
-                caption=f"📸 Скриншот оплаты для заказа {user_order_id}\nUser ID: {user_id}",
+                photo=order_data['address_photo_id'],
+                caption=f"🏠 Адрес доставки для заказа {user_order_id}",
+                reply_to_message_id=admin_message.message_id
+            )
+            
+            # Отправляем скриншот оплаты в группу
+            await context.bot.send_photo(
+                chat_id=GROUP_ID,
+                photo=order_data['payment_photo_id'],
+                caption=f"📸 Скриншот оплаты для заказа {user_order_id}",
                 reply_to_message_id=admin_message.message_id
             )
             
@@ -1176,9 +1214,10 @@ class FoodBot:
         language = self.get_user_language(user_id)
         
         contacts_text = "📞 <b>Контакты</b>\n\n" if language == 'ru' else "📞 <b>연락처</b>\n\n"
-        contacts_text += "📱 Телефон: +821080281960\n" if language == 'ru' else "📱 전화: +821080281960\n"
-        contacts_text += "🕒 Время работы:24hours/7days\n" if language == 'ru' else "🕒 영업시간:24hours/7days\n"
-        
+        contacts_text += "📍 Адрес: Сеул, район Каннам\n" if language == 'ru' else "📍 주소: 서울 강남구\n"
+        contacts_text += "📱 Телефон: +82-10-1234-5678\n" if language == 'ru' else "📱 전화: +82-10-1234-5678\n"
+        contacts_text += "🕒 Время работы: 10:00 - 22:00\n" if language == 'ru' else "🕒 영업시간: 10:00 - 22:00\n"
+        contacts_text += "📧 Email: info@foodcompany.kr" if language == 'ru' else "📧 이메일: info@foodcompany.kr"
         
         keyboard = [[InlineKeyboardButton(get_translation(language, 'back'), callback_data="back")]]
         reply_markup = InlineKeyboardMarkup(keyboard)
@@ -1301,7 +1340,24 @@ class FoodBot:
         application.add_handler(CallbackQueryHandler(self.handle_admin_confirmation, pattern="^admin_"))
         application.add_handler(CallbackQueryHandler(self.handle_category_back, pattern="^cat_"))
         application.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, self.handle_text_input))
-        application.add_handler(MessageHandler(filters.PHOTO, self.handle_photo))
+        
+        # Раздельные обработчики для фото адреса и фото оплаты
+        application.add_handler(MessageHandler(
+            filters.PHOTO & filters.ChatType.PRIVATE, 
+            self.handle_photo_message
+        ))
+
+    async def handle_photo_message(self, update: Update, context: ContextTypes.DEFAULT_TYPE):
+        """Обработка всех фото сообщений"""
+        user_id = update.effective_user.id
+        checkout_step = context.user_data.get('checkout_step')
+        
+        if checkout_step == 'address':
+            # Это фото адреса
+            await self.handle_address_photo(update, context)
+        else:
+            # Это фото оплаты
+            await self.handle_payment_photo(update, context)
 
 def main():
     """Основная функция"""
