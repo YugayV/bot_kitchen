@@ -1214,10 +1214,8 @@ class FoodBot:
         language = self.get_user_language(user_id)
         
         contacts_text = "📞 <b>Контакты</b>\n\n" if language == 'ru' else "📞 <b>연락처</b>\n\n"
-        contacts_text += "📍 Адрес: Сеул, район Каннам\n" if language == 'ru' else "📍 주소: 서울 강남구\n"
-        contacts_text += "📱 Телефон: +82-10-1234-5678\n" if language == 'ru' else "📱 전화: +82-10-1234-5678\n"
-        contacts_text += "🕒 Время работы: 10:00 - 22:00\n" if language == 'ru' else "🕒 영업시간: 10:00 - 22:00\n"
-        contacts_text += "📧 Email: info@foodcompany.kr" if language == 'ru' else "📧 이메일: info@foodcompany.kr"
+        contacts_text += "📱 Телефон: 01080281960\n" if language == 'ru' else "📱 전화: 01080281960\n"
+        contacts_text += "🕒 Время работы: 24Hours/7Days\n" if language == 'ru' else "🕒 영업시간: 24Hours/7Days\n"
         
         keyboard = [[InlineKeyboardButton(get_translation(language, 'back'), callback_data="back")]]
         reply_markup = InlineKeyboardMarkup(keyboard)
