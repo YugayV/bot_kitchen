@@ -1153,9 +1153,10 @@ class FoodBot:
         # Добавляем информацию об адресе в зависимости от типа
         if order_data['address_type'] == 'text':
             group_message += f"🏠 <b>Адрес:</b>\n{order_data.get('address_text', 'Не указан')}\n\n"
+        elif order_data['address_type'] == 'photo':
+            group_message += f"🏠 <b>Адрес:</b> отправлен фото\n\n"
         elif order_data['address_type'] == 'location':
-            loc = order_data.get('location', {})
-            group_message += f"📍 <b>Локация:</b>\nШирота: {loc.get('latitude', 'N/A')}\nДолгота: {loc.get('longitude', 'N/A')}\n\n"
+            group_message += f"📍 <b>Адрес:</b> отправлена локация (нажмите чтобы открыть в картах)\n\n"
         
         group_message += "📋 <b>Детали заказа:</b>\n"
         total = 0
@@ -1198,6 +1199,20 @@ class FoodBot:
                     chat_id=GROUP_ID,
                     photo=order_data['address_photo_id'],
                     caption=f"🏠 Адрес доставки для заказа {user_order_id}",
+                    reply_to_message_id=admin_message.message_id
+                )
+            
+            # Если адрес был отправлен локацией, ПЕРЕСЫЛАЕМ оригинальную локацию
+            elif order_data['address_type'] == 'location' and order_data.get('location'):
+                # Пересылаем оригинальное сообщение с локацией
+                # Для этого нам нужно сохранить message_id локации от пользователя
+                # Но так как мы не сохраняем его, создаем новую локацию с теми же координатами
+                loc = order_data['location']
+                await context.bot.send_location(
+                    chat_id=GROUP_ID,
+                    latitude=loc['latitude'],
+                    longitude=loc['longitude'],
+                    caption=f"📍 Локация заказа {user_order_id} (нажмите чтобы открыть в картах)",
                     reply_to_message_id=admin_message.message_id
                 )
             
