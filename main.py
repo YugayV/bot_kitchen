@@ -4,7 +4,7 @@ import time
 import re
 from datetime import datetime
 import telegram.error
-from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup, KeyboardButton, ReplyKeyboardMarkup, ReplyKeyboardRemove
+from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup
 from telegram.ext import Application, CommandHandler, CallbackQueryHandler, ContextTypes, MessageHandler, filters
 
 # Настройка логирования
@@ -53,7 +53,7 @@ TRANSLATIONS = {
         'go_to_cart': "🛒 Перейти в корзину",
         'checkout_name': "📝 Введите ваше имя:",
         'checkout_phone': "📞 Введите ваш телефон:",
-        'checkout_address': "🏠 Отправьте адрес доставки одним из способов:",
+        'checkout_address': "🏠 Отправьте адрес доставки:",
         'payment_details': "💳 Реквизиты для оплаты:\n\n",
         'payment_amount': "Сумма к оплате:",
         'bank_details': "🏦 Банковские реквизиты:\n전북은행 (JEONBUK BANK)\n계좌번호: 9100053711589\n예금주: 01080281960\n\n",
@@ -95,18 +95,14 @@ TRANSLATIONS = {
         'address_photo_received': "✅ Фото с адресом получено! Теперь отправьте скриншот оплаты.",
         'waiting_address_photo': "📸 Ожидание фото с адресом...",
         'please_send_address_photo': "❌ Пожалуйста, отправьте фото с адресом доставки",
-        'send_address_options': "Вы можете отправить:\n• 📝 Текст с адресом\n• 📸 Фото с адресом\n• 📍 Локацию на карте",
+        'send_address_options': "Вы можете отправить:\n• 📝 Текст с адресом\n• 📸 Фото с адресом",
         'address_text_received': "✅ Адрес получен! Теперь отправьте скриншот оплаты.",
-        'location_received': "✅ Локация получена! Теперь отправьте скриншот оплаты.",
         'waiting_address': "📝 Ожидание адреса доставки...",
         'please_send_address': "❌ Пожалуйста, отправьте адрес доставки",
-        'invalid_location': "❌ Не удалось получить адрес из локации. Пожалуйста, отправьте адрес текстом или фото.",
         'address_method': "📍 Выберите способ отправки адреса:",
         'send_text_address': "📝 Отправить текст",
         'send_photo_address': "📸 Отправить фото", 
-        'send_location': "📍 Отправить локацию",
         'enter_text_address': "📝 Введите адрес доставки текстом:",
-        'request_location': "📍 Нажмите кнопку ниже чтобы отправить вашу локацию:",
         'request_photo': "📸 Отправьте фото с адресом доставки:"
     },
     'ko': {
@@ -143,7 +139,7 @@ TRANSLATIONS = {
         'go_to_cart': "🛒 장바구니로 이동",
         'checkout_name': "📝 이름을 입력하세요:",
         'checkout_phone': "📞 전화번호를 입력하세요:",
-        'checkout_address': "🏠 배달 주소를 다음 방법 중 하나로 보내주세요:",
+        'checkout_address': "🏠 배달 주소를 보내주세요:",
         'payment_details': "💳 결제 정보:\n\n",
         'payment_amount': "결제 금액:",
         'bank_details': "🏦 은행 정보:\n전북은행 (JEONBUK BANK)\n계좌번호: 9100053711589\n예금주: 01080281960\n\n",
@@ -185,18 +181,14 @@ TRANSLATIONS = {
         'address_photo_received': "✅ 주소 사진을 받았습니다! 이제 결제 스크린샷을 보내주세요.",
         'waiting_address_photo': "📸 주소 사진을 기다리는 중...",
         'please_send_address_photo': "❌ 배달 주소 사진을 보내주세요",
-        'send_address_options': "다음으로 보낼 수 있습니다:\n• 📝 주소 텍스트\n• 📸 주소 사진\n• 📍 위치(지도)",
+        'send_address_options': "다음으로 보낼 수 있습니다:\n• 📝 주소 텍스트\n• 📸 주소 사진",
         'address_text_received': "✅ 주소를 받았습니다! 이제 결제 스크린샷을 보내주세요.",
-        'location_received': "✅ 위치를 받았습니다! 이제 결제 스크린샷을 보내주세요.",
         'waiting_address': "📝 배달 주소를 기다리는 중...",
         'please_send_address': "❌ 배달 주소를 보내주세요",
-        'invalid_location': "❌ 위치에서 주소를 가져올 수 없습니다. 주소를 텍스트나 사진으로 보내주세요.",
         'address_method': "📍 주소 전송 방법 선택:",
         'send_text_address': "📝 텍스트로 보내기",
         'send_photo_address': "📸 사진으로 보내기",
-        'send_location': "📍 위치 보내기",
         'enter_text_address': "📝 배달 주소를 텍스트로 입력하세요:",
-        'request_location': "📍 아래 버튼을 눌러 위치를 보내주세요:",
         'request_photo': "📸 배달 주소 사진을 보내주세요:"
     }
 }
@@ -812,7 +804,7 @@ class FoodBot:
                 )
     
     async def handle_checkout(self, update: Update, context: ContextTypes.DEFAULT_TYPE):
-        """Оформление заказа - теперь с выбором способа отправки адреса"""
+        """Оформление заказа"""
         query = update.callback_query
         await query.answer()
         
@@ -907,7 +899,6 @@ class FoodBot:
         keyboard = [
             [InlineKeyboardButton("📝 " + get_translation(language, 'send_text_address'), callback_data="address_text")],
             [InlineKeyboardButton("📸 " + get_translation(language, 'send_photo_address'), callback_data="address_photo")],
-            [InlineKeyboardButton("📍 " + get_translation(language, 'send_location'), callback_data="address_location")],
             [InlineKeyboardButton(get_translation(language, 'back'), callback_data="checkout_back")]
         ]
         reply_markup = InlineKeyboardMarkup(keyboard)
@@ -932,7 +923,7 @@ class FoodBot:
         language = self.get_user_language(user_id)
         method = query.data
         
-        context.user_data['checkout_step'] = method  # address_text, address_photo, address_location
+        context.user_data['checkout_step'] = method  # address_text, address_photo
         
         if method == 'address_text':
             await query.edit_message_text(
@@ -947,43 +938,6 @@ class FoodBot:
                 get_translation(language, 'request_photo'),
                 reply_markup=reply_markup
             )
-            
-        elif method == 'address_location':
-            # Создаем клавиатуру для запроса локации
-            keyboard = [
-                [InlineKeyboardButton("📍 " + get_translation(language, 'send_location'), callback_data="request_location")],
-                [InlineKeyboardButton(get_translation(language, 'back'), callback_data="address_method_back")]
-            ]
-            reply_markup = InlineKeyboardMarkup(keyboard)
-            
-            await query.edit_message_text(
-                get_translation(language, 'request_location'),
-                reply_markup=reply_markup
-            )
-
-    async def handle_request_location(self, update: Update, context: ContextTypes.DEFAULT_TYPE):
-        """Запрос локации у пользователя"""
-        query = update.callback_query
-        await query.answer()
-        
-        user_id = query.from_user.id
-        language = self.get_user_language(user_id)
-        
-        # Создаем клавиатуру с кнопкой отправки локации
-        location_keyboard = KeyboardButton(
-            text="📍 " + get_translation(language, 'send_location'), 
-            request_location=True
-        )
-        reply_markup = ReplyKeyboardMarkup(
-            [[location_keyboard]], 
-            resize_keyboard=True, 
-            one_time_keyboard=True
-        )
-        
-        await query.message.reply_text(
-            "📍 " + get_translation(language, 'request_location'),
-            reply_markup=reply_markup
-        )
 
     async def handle_address_photo(self, update: Update, context: ContextTypes.DEFAULT_TYPE):
         """Обработка фото с адресом"""
@@ -1000,38 +954,8 @@ class FoodBot:
         context.user_data['address_type'] = 'photo'
         context.user_data['checkout_step'] = None
         
-        # Убираем специальную клавиатуру если была
         await update.message.reply_text(
             get_translation(language, 'address_photo_received'),
-            reply_markup=ReplyKeyboardRemove(),
-            reply_to_message_id=update.message.message_id
-        )
-        
-        # Переходим к отправке реквизитов
-        await self.send_payment_details(update, context, user_id, language)
-
-    async def handle_location(self, update: Update, context: ContextTypes.DEFAULT_TYPE):
-        """Обработка локации"""
-        user_id = update.effective_user.id
-        language = self.get_user_language(user_id)
-        
-        # Проверяем, находится ли пользователь на этапе ввода адреса
-        checkout_step = context.user_data.get('checkout_step')
-        if checkout_step != 'address_location':
-            return
-        
-        location = update.message.location
-        context.user_data['location'] = {
-            'latitude': location.latitude,
-            'longitude': location.longitude
-        }
-        context.user_data['address_type'] = 'location'
-        context.user_data['checkout_step'] = None
-        
-        # Убираем специальную клавиатуру
-        await update.message.reply_text(
-            get_translation(language, 'location_received'),
-            reply_markup=ReplyKeyboardRemove(),
             reply_to_message_id=update.message.message_id
         )
         
@@ -1039,7 +963,7 @@ class FoodBot:
         await self.send_payment_details(update, context, user_id, language)
 
     async def send_payment_details(self, update: Update, context: ContextTypes.DEFAULT_TYPE, user_id: int, language: str):
-        """Отправка реквизитов для оплаты (обновленная версия)"""
+        """Отправка реквизитов для оплаты"""
         cart = context.user_data.get('order_cart', {})
         customer_name = context.user_data.get('customer_name', '')
         customer_phone = context.user_data.get('customer_phone', '')
@@ -1083,8 +1007,6 @@ class FoodBot:
             order_data['address_text'] = context.user_data.get('address_text', '')
         elif address_type == 'photo':
             order_data['address_photo_id'] = context.user_data.get('address_photo_id', '')
-        elif address_type == 'location':
-            order_data['location'] = context.user_data.get('location', {})
         
         self.user_orders[order_id] = order_data
         
@@ -1114,7 +1036,7 @@ class FoodBot:
             await update.message.reply_text("❌ Ошибка оформления заказа. Пожалуйста, попробуйте позже.")
 
     async def handle_payment_photo(self, update: Update, context: ContextTypes.DEFAULT_TYPE):
-        """Обработка скриншотов оплаты (обновленная версия)"""
+        """Обработка скриншотов оплаты"""
         user_id = update.effective_user.id
         language = self.get_user_language(user_id)
         
@@ -1155,8 +1077,6 @@ class FoodBot:
             group_message += f"🏠 <b>Адрес:</b>\n{order_data.get('address_text', 'Не указан')}\n\n"
         elif order_data['address_type'] == 'photo':
             group_message += f"🏠 <b>Адрес:</b> отправлен фото\n\n"
-        elif order_data['address_type'] == 'location':
-            group_message += f"📍 <b>Адрес:</b> отправлена локация (нажмите чтобы открыть в картах)\n\n"
         
         group_message += "📋 <b>Детали заказа:</b>\n"
         total = 0
@@ -1202,20 +1122,6 @@ class FoodBot:
                     reply_to_message_id=admin_message.message_id
                 )
             
-            # Если адрес был отправлен локацией, ПЕРЕСЫЛАЕМ оригинальную локацию
-            elif order_data['address_type'] == 'location' and order_data.get('location'):
-                # Пересылаем оригинальное сообщение с локацией
-                # Для этого нам нужно сохранить message_id локации от пользователя
-                # Но так как мы не сохраняем его, создаем новую локацию с теми же координатами
-                loc = order_data['location']
-                await context.bot.send_location(
-                    chat_id=GROUP_ID,
-                    latitude=loc['latitude'],
-                    longitude=loc['longitude'],
-                    caption=f"📍 Локация заказа {user_order_id} (нажмите чтобы открыть в картах)",
-                    reply_to_message_id=admin_message.message_id
-                )
-            
             # Отправляем скриншот оплаты в группу
             await context.bot.send_photo(
                 chat_id=GROUP_ID,
@@ -1249,8 +1155,7 @@ class FoodBot:
         """Получить текстовое описание типа адреса"""
         types = {
             'text': 'Текстовый адрес',
-            'photo': 'Фото с адресом', 
-            'location': 'Локация на карте'
+            'photo': 'Фото с адресом'
         }
         return types.get(address_type, 'Неизвестно')
 
@@ -1544,7 +1449,7 @@ class FoodBot:
             await self.handle_payment_photo(update, context)
 
     def setup_handlers(self, application):
-        """Настройка обработчиков (обновленная версия)"""
+        """Настройка обработчиков"""
         application.add_handler(CommandHandler("start", self.start))
         application.add_handler(CallbackQueryHandler(self.handle_language, pattern="^lang_"))
         application.add_handler(CallbackQueryHandler(self.handle_menu, pattern="^menu$"))
@@ -1564,22 +1469,17 @@ class FoodBot:
         application.add_handler(CallbackQueryHandler(self.handle_admin_confirmation, pattern="^admin_"))
         application.add_handler(CallbackQueryHandler(self.handle_category_back, pattern="^cat_"))
         
-        # Новые обработчики для адреса
-        application.add_handler(CallbackQueryHandler(self.handle_address_method, pattern="^address_(text|photo|location)$"))
-        application.add_handler(CallbackQueryHandler(self.handle_request_location, pattern="^request_location$"))
+        # Обработчики для адреса
+        application.add_handler(CallbackQueryHandler(self.handle_address_method, pattern="^address_(text|photo)$"))
         application.add_handler(CallbackQueryHandler(self.handle_address_method_back, pattern="^address_method_back$"))
         application.add_handler(CallbackQueryHandler(self.handle_checkout_back, pattern="^checkout_back$"))
         
         application.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, self.handle_text_input))
         
-        # Обработчики для фото и локации
+        # Обработчики для фото
         application.add_handler(MessageHandler(
             filters.PHOTO & filters.ChatType.PRIVATE, 
             self.handle_photo_message
-        ))
-        application.add_handler(MessageHandler(
-            filters.LOCATION & filters.ChatType.PRIVATE,
-            self.handle_location
         ))
 
 def main():
